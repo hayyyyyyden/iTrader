@@ -12,7 +12,7 @@ class DataHandler(object):
     all subsequent (inherited) data handlers (both live and historic).
 
     The goal of a (derived) DataHandler object is to output a generated
-    set of bars (OLHCVI) for each symbol requested.
+    set of bars (OLHCV) for each symbol requested.
 
     This will replicate how a live strategy would function as current
     market data would be sent "down the pipe". Thus a historic and live
@@ -75,20 +75,22 @@ class HistoricCSVDataHandler(DataHandler):
         them into pandas DataFrames within a symbol dictionary.
 
         For this handler it will be assumed that the data is
-        taken from DTN IQFeed. Thus its format will be respected.
+        taken from demo data csv data. Thus its format will be respected.
         """
         comb_index = None
         for s in self.symbol_list:
             # Load the CSV file with no header information, indexed on date
-            self.symbol_data[s] = pd.io.parsers.read_csv(
-                                      os.path.join(self.csv_dir, '%s.csv' % s),
+            fn = os.path.join(self.csv_dir, '%s.csv' % s)
+            # print(fn)
+            self.symbol_data[s] = pd.io.parsers.read_csv(fn,
                                       header=0, index_col=0,
-                                      names=['datetime','open','low','high','close','volume','oi']
+                                      names=['datetime','open','high','low','close','volume']
                                   )
-
+            # print(self.symbol_data[s])
             # Combine the index to pad forward values
             if comb_index is None:
                 comb_index = self.symbol_data[s].index
+                # print(comb_index)
             else:
                 comb_index.union(self.symbol_data[s].index)
 
@@ -102,10 +104,14 @@ class HistoricCSVDataHandler(DataHandler):
     def _get_new_bar(self, symbol):
         """
         Returns the latest bar from the data feed as a tuple of
-        (sybmbol, datetime, open, low, high, close, volume).
+        (sybmbol, datetime, open, high, low, close, volume).
         """
+        # print(self.symbol_data[symbol])
         for b in self.symbol_data[symbol]:
-            yield tuple([symbol, datetime.datetime.strptime(b[0], '%Y-%m-%d %H:%M:%S'),
+             # there is simply no way that Python strptime could parse
+             # nanosecond. so tirm of the last 3 digits.
+             # ref: https://stackoverflow.com/questions/57086011/2019-07-17t000000-000000000z-does-not-match-format-y-m-dthms-fz
+            yield tuple([symbol, datetime.datetime.strptime(b[0][:-4], "%Y-%m-%dT%H:%M:%S.%f"),
                         b[1][0], b[1][1], b[1][2], b[1][3], b[1][4]])
 
     def get_latest_bars(self, symbol, N=1):
@@ -116,7 +122,7 @@ class HistoricCSVDataHandler(DataHandler):
         try:
             bars_list = self.latest_symbol_data[symbol]
         except KeyError:
-            print "That symbol is not available in the historical data set."
+            print("That symbol is not available in the historical data set.")
         else:
             return bars_list[-N:]
 
@@ -127,10 +133,16 @@ class HistoricCSVDataHandler(DataHandler):
         """
         for s in self.symbol_list:
             try:
-                bar = self._get_new_bar(s).next()
+                bar = next(self._get_new_bar(s))
             except StopIteration:
                 self.continue_backtest = False
             else:
                 if bar is not None:
                     self.latest_symbol_data[s].append(bar)
-        self.events.put(MarketEvent())
+        # self.events.put(MarketEvent())
+
+
+if __name__ == "__main__":
+    d = HistoricCSVDataHandler(None, './data', ['GBP_USD_D'])
+    d.update_bars()
+    print(d.get_latest_bars('GBP_USD_D'))
