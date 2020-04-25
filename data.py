@@ -99,6 +99,7 @@ class HistoricCSVDataHandler(DataHandler):
 
         # Reindex the dataframes
         for s in self.symbol_list:
+            # TODO: figure out
             self.symbol_data[s] = self.symbol_data[s].reindex(index=comb_index, method='pad').iterrows()
 
     def _get_new_bar(self, symbol):
@@ -139,10 +140,11 @@ class HistoricCSVDataHandler(DataHandler):
             else:
                 if bar is not None:
                     self.latest_symbol_data[s].append(bar)
-        # self.events.put(MarketEvent())
+        self.events.put(MarketEvent())
 
 
 if __name__ == "__main__":
-    d = HistoricCSVDataHandler(None, './data', ['GBP_USD_D'])
+    import queue
+    d = HistoricCSVDataHandler(queue.Queue(), './data', ['GBP_USD_D'])
     d.update_bars()
     print(d.get_latest_bars('GBP_USD_D'))
