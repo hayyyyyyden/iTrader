@@ -1,7 +1,8 @@
 import datetime
 import numpy as np
 import pandas as pd
-import Queue
+import queue
+import time
 
 from abc import ABCMeta, abstractmethod
 from event import SignalEvent
@@ -79,6 +80,7 @@ class BuyAndHoldStrategy(Strategy):
             for s in self.symbol_list:
                 bars = self.bars.get_latest_bars(s, N=1)
                 if bars is not None and bars != []:
+                    print(bars)
                     if self.bought[s] == False:
                         # (Symbol, Datetime, Type = LONG, SHORT or EXIT)
                         signal = SignalEvent(bars[0][0], bars[0][1], 'LONG')
