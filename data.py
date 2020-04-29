@@ -116,7 +116,7 @@ class HistoricCSVDataHandler(DataHandler):
             self.symbol_data[s] = pd.io.parsers.read_csv(fn,
                                       header=0, index_col=0,
                                       names=['datetime','open',
-                                      'high','low','volume','adj_close']
+                                      'high','low','close', 'volume','adj_close']
                                   )
             self.symbol_data[s].sort_index(inplace=True)
 
@@ -215,6 +215,7 @@ class HistoricCSVDataHandler(DataHandler):
         """
         try:
             bars_list = self.get_latest_bars(symbol, N)
+            print(bars_list)
         except KeyError:
             print("That symbol is not available in the historical data set.")
             raise
