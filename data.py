@@ -1,8 +1,9 @@
+from abc import ABCMeta, abstractmethod
 import datetime
 import os, os.path
-import pandas as pd
 
-from abc import ABCMeta, abstractmethod
+import pandas as pd
+import numpy as np
 
 from event import MarketEvent
 
@@ -22,12 +23,42 @@ class DataHandler(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
+    def get_latest_bar(self, symbol):
+        """
+        Returns the last bar updated.
+        """
+        raise NotImplementedError("Should implement get_latest_bar()")
+
+    @abstractmethod
     def get_latest_bars(self, symbol, N=1):
         """
         Returns the last N bars from the latest_symbol list,
         or fewer if less bars are available.
         """
         raise NotImplementedError("Should implement get_latest_bars()")
+
+    @abstractmethod
+    def get_latest_bar_datetime(self, symbol):
+        """
+        Returns a python datetime object for the last bar.
+        """
+        raise NotImplementedError("Should implement get_latest_bar_datetime()")
+
+    @abstractmethod
+    def get_latest_bar_value(self, symbol, val_type):
+        """
+        Returns one of the Open, High, Low, Close, Volume or OpenInterest
+        for the last bar.
+        """
+        raise NotImplementedError("Should implement get_latest_bar_value()")
+
+    @abstractmethod
+    def get_latest_bars_values(self, symbol, val_type, N=1):
+        """
+        Returns one of the Open, High, Low, Close, Volume or OpenInterest
+        for the last N bars, N-k if less available.
+        """
+        raise NotImplementedError("Should implement get_latest_bars_values()")
 
     @abstractmethod
     def update_bars(self):
@@ -84,9 +115,11 @@ class HistoricCSVDataHandler(DataHandler):
             # print(fn)
             self.symbol_data[s] = pd.io.parsers.read_csv(fn,
                                       header=0, index_col=0,
-                                      names=['datetime','open','high','low','close','volume']
+                                      names=['datetime','open',
+                                      'high','low','volume','adj_close']
                                   )
-            # print(self.symbol_data[s])
+            self.symbol_data[s].sort_index(inplace=True)
+
             # Combine the index to pad forward values
             if comb_index is None:
                 comb_index = self.symbol_data[s].index
@@ -99,21 +132,43 @@ class HistoricCSVDataHandler(DataHandler):
 
         # Reindex the dataframes
         for s in self.symbol_list:
-            # TODO: figure out
-            self.symbol_data[s] = self.symbol_data[s].reindex(index=comb_index, method='pad').iterrows()
+            # 重新 index
+            self.symbol_data[s] = self.symbol_data[s].reindex(
+                index=comb_index, method='pad'
+            )
+            # 增加一个新的column，计算当前收盘价对昨日收盘价的变化百分比
+            # 使用的是调整后的收盘价 adj_close（除权？）
+            self.symbol_data[s]["returns"] = self.symbol_data[s][
+                "adj_close"
+            ].pct_change().dropna()
+            # 生成一个迭代器
+            self.symbol_data[s] = self.symbol_data[s].iterrows()
 
     def _get_new_bar(self, symbol):
         """
         Returns the latest bar from the data feed as a tuple of
         (sybmbol, datetime, open, high, low, close, volume).
         """
-        # print(self.symbol_data[symbol])
         for b in self.symbol_data[symbol]:
-             # there is simply no way that Python strptime could parse
-             # nanosecond. so tirm of the last 3 digits.
-             # ref: https://stackoverflow.com/questions/57086011/2019-07-17t000000-000000000z-does-not-match-format-y-m-dthms-fz
-            yield tuple([symbol, datetime.datetime.strptime(b[0][:-4], "%Y-%m-%dT%H:%M:%S.%f"),
-                        b[1][0], b[1][1], b[1][2], b[1][3], b[1][4]])
+            yield b
+            # Code below used to deal with intraday data from Oanda
+            # there is simply no way that Python strptime could parse
+            # nanosecond. so tirm of the last 3 digits.
+            # ref: https://stackoverflow.com/questions/57086011/2019-07-17t000000-000000000z-does-not-match-format-y-m-dthms-fz
+            # yield tuple([symbol, datetime.datetime.strptime(b[0][:-4], "%Y-%m-%dT%H:%M:%S.%f"),
+            #             b[1][0], b[1][1], b[1][2], b[1][3], b[1][4]])\
+
+    def get_latest_bar(self, symbol):
+        """
+        Returns the last bar from the latest_symbol list.
+        """
+        try:
+            bars_list = self.latest_symbol_data[symbol]
+        except KeyError:
+            print("That symbol is not available in the historical data set.")
+            raise
+        else:
+            return bars_list[-1]
 
     def get_latest_bars(self, symbol, N=1):
         """
@@ -124,8 +179,48 @@ class HistoricCSVDataHandler(DataHandler):
             bars_list = self.latest_symbol_data[symbol]
         except KeyError:
             print("That symbol is not available in the historical data set.")
+            raise
         else:
             return bars_list[-N:]
+
+    def get_latest_bar_datetime(self, symbol):
+        """
+        Returns a Python datetime object for the last bar.
+        """
+        try:
+            bars_list = self.latest_symbol_data[symbol]
+        except KeyError:
+            print("That symbol is not available in the historical data set.")
+            raise
+        else:
+            return bars_list[-1][0]
+
+    def get_latest_bar_value(self, symbol, val_type):
+        """
+        Returns one of the Open, High, Low, Close, Volume or OpenInterest
+        for the last bar.
+        """
+        try:
+            bars_list = self.latest_symbol_data[symbol]
+        except KeyError:
+            print("That symbol is not available in the historical data set.")
+            raise
+        else:
+            return getattr(bars_list[-1][1], val_type)
+
+    def get_latest_bars_values(self, symbol, val_type, N=1):
+        """
+        Returns one of the Open, High, Low, Close, Volume or OpenInterest
+        for the last N bars, N-k if less available.
+        """
+        try:
+            bars_list = self.get_latest_bars(symbol, N)
+        except KeyError:
+            print("That symbol is not available in the historical data set.")
+            raise
+        else:
+            return np.array([getattr(b[1], val_type) for b in bars_list])
+
 
     def update_bars(self):
         """
@@ -145,6 +240,6 @@ class HistoricCSVDataHandler(DataHandler):
 
 if __name__ == "__main__":
     import queue
-    d = HistoricCSVDataHandler(queue.Queue(), './data', ['GBP_USD_D'])
+    d = HistoricCSVDataHandler(queue.Queue(), './data', ['AAPL'])
     d.update_bars()
-    print(d.get_latest_bars('GBP_USD_D'))
+    print(d.get_latest_bars('AAPL'))

@@ -66,9 +66,13 @@ class NaivePortfolio(Portfolio):
 
         self.all_positions = self.construct_all_positions()
         self.current_positions = dict( (k,v) for k, v in [(s, 0) for s in self.symbol_list] )
+        print(self.current_positions)
+        print(self.all_positions)
 
         self.all_holdings = self.construct_all_holdings()
         self.current_holdings = self.construct_current_holdings()
+        print(self.current_holdings)
+        print(self.all_holdings)
 
     def construct_all_positions(self):
         """
@@ -112,13 +116,15 @@ class NaivePortfolio(Portfolio):
 
         Makes use of a MarketEvent from the events queue.
         """
-        bars = {}
-        for sym in self.symbol_list:
-            bars[sym] = self.bars.get_latest_bars(sym, N=1)
+
+        latest_datetime = self.bars.get_latest_bar_datetime(
+            self.symbol_list[0]
+        )
 
         # Update positions
+        # ===============
         dp = dict( (k,v) for k, v in [(s, 0) for s in self.symbol_list] )
-        dp['datetime'] = bars[self.symbol_list[0]][0][1]
+        dp['datetime'] = latest_datetime
 
         for s in self.symbol_list:
             dp[s] = self.current_positions[s]
@@ -127,15 +133,19 @@ class NaivePortfolio(Portfolio):
         self.all_positions.append(dp)
 
         # Update holdings
+        # ===============
         dh = dict( (k,v) for k, v in [(s, 0) for s in self.symbol_list] )
-        dh['datetime'] = bars[self.symbol_list[0]][0][1]
+        dh['datetime'] = latest_datetime
         dh['cash'] = self.current_holdings['cash']
         dh['commission'] = self.current_holdings['commission']
         dh['total'] = self.current_holdings['cash']
 
         for s in self.symbol_list:
             # Approximation to the real value, [5] = close price
-            market_value = self.current_positions[s] * bars[s][0][5]
+            # print(s)
+            # print(bars[s][0][1].values[4])
+            market_value = self.current_positions[s] * \
+                self.bars.get_latest_bar_value(s, "adj_close")
             dh[s] = market_value
             dh['total'] += market_value
 
@@ -178,7 +188,7 @@ class NaivePortfolio(Portfolio):
         # Update holdings list with new quantities
         # This is estimated cause we do NOT know the cost of fill
         # in a simulated environment. (there are slippery etc in real.)
-        fill_cost = self.bars.get_latest_bars(fill.symbol)[0][5]  # Close price
+        fill_cost = self.bars.get_latest_bar_value(fill.symbol, "adj_close")
         cost = fill_dir * fill_cost * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['commission'] += fill.commission
@@ -193,6 +203,7 @@ class NaivePortfolio(Portfolio):
         if event.type == 'FILL':
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
+            # self.update_trades_from_fill(event)
 
     def generate_naive_order(self, signal):
         """
@@ -244,6 +255,15 @@ class NaivePortfolio(Portfolio):
         curve['equity_curve'] = (1.0+curve['returns']).cumprod()
         self.equity_curve = curve
 
+    def create_trade_history_dataframe(self):
+        """
+        Creates a pandas DataFrame from the all_positions
+        list of dictionaries.
+        """
+        trade = pd.DataFrame(self.all_positions)
+        trade.set_index('datetime', inplace=True)
+        self.trade_history = trade
+
     def output_summary_stats(self):
         """
         Creates a list of summary statistics for the portfolio such
@@ -254,10 +274,17 @@ class NaivePortfolio(Portfolio):
         pnl = self.equity_curve['equity_curve']
 
         sharpe_ratio = create_sharpe_ratio(returns)
-        max_dd, dd_duration = create_drawdowns(pnl)
+        drawdown, max_dd, dd_duration = create_drawdowns(pnl)
+        self.equity_curve['drawdown'] = drawdown
 
         stats = [("Total Return", "%0.2f%%" % ((total_return - 1.0) * 100.0)),
                  ("Sharpe Ratio", "%0.2f" % sharpe_ratio),
                  ("Max Drawdown", "%0.2f%%" % (max_dd * 100.0)),
                  ("Drawdown Duration", "%d" % dd_duration)]
+        print('======')
+        print(self.current_holdings)
+        print(self.current_positions)
+        print('======')
+        self.equity_curve.to_csv('equity.csv')
+        self.trade_history.to_csv('all_positions.csv')
         return stats
