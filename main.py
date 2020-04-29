@@ -48,4 +48,6 @@ while True:
 
 port.create_equity_curve_dataframe()
 stats = port.output_summary_stats()
-print(stats)
+for s in port.all_positions:
+    print(s)
+# print(stats)
