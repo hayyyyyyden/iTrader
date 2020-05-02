@@ -15,7 +15,7 @@ from sklearn.metrics import confusion_matrix
 from sklearn.svm import LinearSVC, SVC
 from alpha_vantage import AlphaVantage
 
-def create_lagged_series(symbol, start_date, end_date, lags=5):
+def create_lagged_series(av, symbol, start_date, end_date, lags=5):
     """
     This creates a Pandas DataFrame that stores the
     percentage returns of the adjusted closing value of
@@ -40,6 +40,8 @@ def create_lagged_series(symbol, start_date, end_date, lags=5):
     'pd.DataFrame'
     Contains the Adjusted Closing Price returns and lags
     """
+    if av is None:
+        av = AlphaVantage(api_key="Z5UZVXLKA7XOWF67")
     # Obtain stock pricing from AlphaVantage
     adj_start_date = start_date - td(days=365)
     ts = av.get_daily_historic_data(symbol, adj_start_date, end_date)
