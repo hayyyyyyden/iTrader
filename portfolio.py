@@ -74,6 +74,15 @@ class NaivePortfolio(Portfolio):
         print(self.current_holdings)
         print(self.all_holdings)
 
+        self.all_orders = self.construct_all_orders()
+        print(self.all_orders)
+
+    def construct_all_orders(self):
+        res = {}
+        for s in self.symbol_list:
+            res[s] = []
+        return res
+
     def construct_all_positions(self):
         """
         Constructs the positions list using the start_date
@@ -195,6 +204,9 @@ class NaivePortfolio(Portfolio):
         self.current_holdings['cash'] -= (cost + fill.commission)
         self.current_holdings['total'] -= (cost + fill.commission)
 
+    def update_orders_from_fill(self, fill):
+        self.all_orders[fill.symbol].append(fill.order)
+
     def update_fill(self, event):
         """
         Updates the portfolio current positions and holdings
@@ -203,7 +215,7 @@ class NaivePortfolio(Portfolio):
         if event.type == 'FILL':
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
-            # self.update_trades_from_fill(event)
+            self.update_orders_from_fill(event)
 
     def generate_naive_order(self, signal):
         """
@@ -287,4 +299,7 @@ class NaivePortfolio(Portfolio):
         print('======')
         self.equity_curve.to_csv('equity.csv')
         self.trade_history.to_csv('all_positions.csv')
+
+        print(self.all_orders)
+
         return stats
