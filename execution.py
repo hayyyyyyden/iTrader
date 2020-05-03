@@ -43,15 +43,17 @@ class SimulatedExecutionHandler(ExecutionHandler):
     handler.
     """
 
-    def __init__(self, events):
+    def __init__(self, events, bars):
         """
         Initialises the handler, setting the event queues
         up internally.
 
         Parameters:
         events - The Queue of Event objects.
+        bars - The Data Handler that give the data feed.
         """
         self.events = events
+        self.bars = bars
 
     def execute_order(self, event):
         """
