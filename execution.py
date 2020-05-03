@@ -62,7 +62,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
         event - Contains an Event object with order information.
         """
         if event.type == 'ORDER':
-            fill_event = FillEvent(event.order_id, datetime.datetime.utcnow(), 
+            fill_event = FillEvent(event, datetime.datetime.utcnow(),
                                    event.symbol,'LOCAL', event.quantity,
                                    event.direction, 0.01)
             self.events.put(fill_event)
