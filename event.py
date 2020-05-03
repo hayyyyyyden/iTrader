@@ -100,7 +100,7 @@ class FillEvent(Event):
     the commission of the trade from the brokerage.
     """
 
-    def __init__(self, order, timeindex, symbol, exchange, quantity,
+    def __init__(self, order, timeindex, price, symbol, exchange, quantity,
                  direction, fill_cost, commission=None):
         """
         Initialises the FillEvent object. Sets the symbol, exchange,
@@ -124,6 +124,7 @@ class FillEvent(Event):
         self.type = 'FILL'
         self.order = order
         self.timeindex = timeindex
+        self.price = price
         self.symbol = symbol
         self.exchange = exchange
         self.quantity = quantity
