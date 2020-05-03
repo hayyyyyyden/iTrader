@@ -1,3 +1,6 @@
+import uuid
+
+
 class Event(object):
   """
   Event is base class providing an interface for all subsequent
@@ -66,6 +69,7 @@ class OrderEvent(Event):
         """
 
         self.type = 'ORDER'
+        self.order_id = uuid.uuid4()
         self.symbol = symbol
         self.order_type = order_type
         self.quantity = quantity
