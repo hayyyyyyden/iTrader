@@ -63,8 +63,12 @@ class SimulatedExecutionHandler(ExecutionHandler):
         Parameters:
         event - Contains an Event object with order information.
         """
-        if event.type == 'ORDER':
-            fill_event = FillEvent(event, datetime.datetime.utcnow(),
+        if event.type == 'ORDER' and event.order_type == 'MKT':
+            # Now we are opening a new order 按照市场价开新单
+            s = event.symbol
+            timeindex = self.bars.get_latest_bar_datetime(s)
+            price = self.bars.get_latest_bar_value(s, "adj_close")
+            fill_event = FillEvent(event, timeindex, price,
                                    event.symbol,'LOCAL', event.quantity,
                                    event.direction, 0.01)
             self.events.put(fill_event)
