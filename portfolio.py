@@ -4,6 +4,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import queue
+import copy
 
 from abc import ABCMeta, abstractmethod
 from math import floor
@@ -198,7 +199,16 @@ class NaivePortfolio(Portfolio):
         self.current_holdings['total'] -= (cost + fill.commission)
 
     def update_orders_from_fill(self, fill):
-        self.all_orders.append(vars(fill.order))
+        order_id = fill.order.order_id
+        xx = next((item for item in self.all_orders if item.order_id == order_id), None)
+        if xx is None and fill.order.entry_time is None:
+            fill.order.entry_time = fill.timeindex
+            fill.order.entry_price = fill.price
+            self.all_orders.append(fill.order)
+        elif xx is not None and xx.entry_time is not None:
+            xx.exit_time = fill.timeindex
+            xx.exit_price = fill.price
+            xx.profit = 100
 
     def update_fill(self, event):
         """
@@ -235,9 +245,21 @@ class NaivePortfolio(Portfolio):
             order = OrderEvent(symbol, order_type, mkt_quantity, 'SELL')
 
         if direction == 'EXIT' and cur_quantity > 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL')
+            for cur_order in self.all_orders:
+                if cur_order.entry_time is not None and \
+                    cur_order.exit_time is None and \
+                    cur_order.symbol == signal.symbol:
+                    order = copy.copy(cur_order)
+                    order.direction = 'SELL'
+                    order.quantity = abs(cur_quantity)
         if direction == 'EXIT' and cur_quantity < 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY')
+            for cur_order in self.all_orders:
+                if cur_order.entry_time is not None and \
+                    cur_order.exit_time is None and \
+                    cur_order.symbol == signal.symbol:
+                    order = copy.copy(cur_order)
+                    order.direction = 'BUY'
+                    order.quantity = abs(cur_quantity)
         return order
 
     def update_signal(self, event):
@@ -292,7 +314,7 @@ class NaivePortfolio(Portfolio):
         print('======')
         self.equity_curve.to_csv('equity.csv')
         self.trade_history.to_csv('all_positions.csv')
-        pd.DataFrame(self.all_orders).to_csv('all_orders.csv')
+        pd.DataFrame([vars(c) for c in self.all_orders]).to_csv('all_orders.csv')
         print(self.all_orders)
 
         return stats
