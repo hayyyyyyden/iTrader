@@ -55,6 +55,78 @@ class SimulatedExecutionHandler(ExecutionHandler):
         self.events = events
         self.bars = bars
 
+        self.all_orders = []
+
+    def _find_open_order(self, symbol):
+        # 找到当前所有订单中还开放的订单，即 entry_price 不是 None，
+        # 但是 exit_price 是 None，返回。找不到返回 None。
+        for order in self.all_orders:
+            if order.symbol == symbol and order.entry_price is not None and \
+                order.exit_price is None:
+                return order
+        return None
+
+    def scan_open_orders(self, event):
+        for symbol in self.bars.symbol_list:
+            timeindex = self.bars.get_latest_bar_datetime(symbol)
+            latest_bar = self.bars.get_latest_bar(symbol)[1]
+
+            for order in self.all_orders:
+                if order.symbol != symbol:
+                    continue
+                if order.entry_price is None:
+                    # LMT order 限价单的处理
+                    pass
+                elif order.exit_price is None:
+                    # stop_loss 和 profit target 的处理
+                    print()
+                    if order.stop_loss is not None:
+                        if order.direction == 'BUY' and latest_bar['low'] <= order.stop_loss:
+                            # 触发止损
+                            # 更新它的出场信息（价格，时间，盈亏）
+                            order.exit_time = timeindex
+                            order.exit_price = order.stop_loss
+                            order.profit = (order.exit_price - order.entry_price) * order.quantity
+                            # TODO: 这里的方向是 hardcoded，因为和order是反着的
+                            fill_event = FillEvent(order, timeindex, order.exit_price,order.symbol,'LOCAL', order.quantity,'SELL', 0.01)
+                            return fill_event
+
+                        if order.direction == 'SELL' and latest_bar['high'] >= order.stop_loss:
+                           # 触发止损
+                           # 更新它的出场信息（价格，时间，盈亏）
+                           order.exit_time = timeindex
+                           order.exit_price = order.stop_loss
+                           order.profit = (order.exit_price - order.entry_price) * order.quantity
+                           # TODO: 这里的方向是 hardcoded，因为和order是反着的
+                           fill_event = FillEvent(order, timeindex, order.exit_price, order.symbol,'LOCAL', order.quantity,'BUY', 0.01)
+                           return fill_event
+
+                    if order.profit_target is not None:
+                        if order.direction == 'BUY' and latest_bar['high'] >= order.profit_target:
+                            # 触发止盈
+                            # 更新它的出场信息（价格，时间，盈亏）
+                            order.exit_time = timeindex
+                            order.exit_price = order.profit_target
+                            order.profit = (order.profit_target - order.entry_price) * order.quantity
+                            # TODO: 这里的方向是 hardcoded，因为和order是反着的
+                            fill_event = FillEvent(order, timeindex, order.exit_price, order.symbol,'LOCAL', order.quantity,'SELL', 0.01)
+                            return fill_event
+
+                        if order.direction == 'SELL' and latest_bar['low'] <= order.profit_target:
+                            # 触发止盈
+                            # 更新它的出场信息（价格，时间，盈亏）
+                            order.exit_time = timeindex
+                            order.exit_price = order.profit_target
+                            order.profit = (order.profit_target - order.entry_price) * order.quantity
+                            # TODO: 这里的方向是 hardcoded，因为和 order 是反着的
+                            fill_event = FillEvent(order, timeindex, order.exit_price, order.symbol,'LOCAL', order.quantity,'BUY', 0.01)
+                            return fill_event
+
+        return None
+
+
+
+
     def execute_order(self, event):
         """
         Simply converts Order objects into Fill objects naively,
@@ -65,10 +137,25 @@ class SimulatedExecutionHandler(ExecutionHandler):
         """
         if event.type == 'ORDER' and event.order_type == 'MKT':
             # Now we are opening a new order 按照市场价开新单
-            s = event.symbol
-            timeindex = self.bars.get_latest_bar_datetime(s)
-            price = self.bars.get_latest_bar_value(s, "adj_close")
-            fill_event = FillEvent(event, timeindex, price,
+            timeindex = self.bars.get_latest_bar_datetime(event.symbol)
+            price = self.bars.get_latest_bar_value(event.symbol, "adj_close")
+            order = self._find_open_order(event.symbol)
+            if order is None:
+                # 找不到，新建一个 order，更新它的进场时间和价格
+                order = event
+                order.entry_time = timeindex
+                order.entry_price = price
+                self.all_orders.append(event)
+            else:
+                # 找到了现有 order，更新它的信息
+                order.exit_time = timeindex
+                order.exit_price = price
+                order.profit = (price - order.entry_price) * order.quantity
+            # 无论如何，这个订单要按照市场价执行。
+            fill_event = FillEvent(order, timeindex, price,
                                    event.symbol,'LOCAL', event.quantity,
                                    event.direction, 0.01)
             self.events.put(fill_event)
+
+        elif event.type == 'ORDER' and event.order_type == 'LMT':
+            self.all_orders.append(event)

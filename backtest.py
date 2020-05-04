@@ -88,6 +88,9 @@ class Backtest(object):
                 else:
                     if event is not None:
                         if event.type == 'MARKET':
+                            fill_event = self.execution_handler.scan_open_orders(event)
+                            if fill_event is not None:
+                                self.portfolio.update_fill(fill_event)
                             self.strategy.calculate_signals(event)
                             self.portfolio.update_timeindex(event)
 
@@ -111,6 +114,7 @@ class Backtest(object):
         """
         self.portfolio.create_equity_curve_dataframe()
         self.portfolio.create_trade_history_dataframe()
+        self.portfolio.create_order_history_dataframe()
 
         print("Creating summary stats...")
         stats = self.portfolio.output_summary_stats()
