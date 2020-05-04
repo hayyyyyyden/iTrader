@@ -57,7 +57,7 @@ class MovingAverageCrossStrategy(Strategy):
                     s, "adj_close", N=self.long_window
                 )
                 bar_date = self.bars.get_latest_bar_datetime(s)
-                if bars is not None and bars != []:
+                if bars is not None and bars.size > 0:
                     short_sma = np.mean(bars[-self.short_window:])
                     long_sma = np.mean(bars[-self.long_window:])
 
