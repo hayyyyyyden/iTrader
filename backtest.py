@@ -77,6 +77,8 @@ class Backtest(object):
             if self.data_handler.continue_backtest == True:
                 self.data_handler.update_bars()
             else:
+                # TODO: Close all open orders 关闭所有未平仓订单
+                # e.g. self.execution_handler.clos_all_open_orders()
                 break
 
             # Handle the events:
