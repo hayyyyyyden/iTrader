@@ -77,15 +77,54 @@ class SimulatedExecutionHandler(ExecutionHandler):
                 if order.entry_price is None:
                     if order.order_type == 'LMT' and order.limit_price is not None:
                         # Limit order 限价单的处理，确保还没进场，并且设置好了 limit price
-                        # TODO:
-                        pass
-                    elif order.order_type == 'LMT' and order.stop_price is not None:
-                        # Stop order 限价单的处理，确保还没进场，并且设置好了 stop price
+                        if order.direction == 'BUY' and latest_bar['low'] < order.limit_price:
+                            # 达到了进场条件，进场。实际应该是 ask low <= 才执行，买单要看 ask
+                            # TODO: 时间应该是当前bar和之前一个bar之间的某一个时间。
+                            order.entry_price = timeindex
+                            # 简单的使用了 limit price，实际情况可能会更好的价格
+                            order.entry_price = order.limit_price
+                            fill_event = FillEvent(order, timeindex, order.limit_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
+                            return fill_event
+
+                        if order.direction == 'SELL' and latest_bar['high'] > order.limit_price:
+                            # 达到了进场条件，进场。实际应该是 bid high >= 才执行，卖单要看 bid
+                            # TODO: 时间应该是当前bar和之前一个bar之间的某一个时间。
+                            order.entry_price = timeindex
+                            # 简单的使用了 limit price，实际情况可能会更好的价格
+                            order.entry_price = order.limit_price
+                            fill_event = FillEvent(order, timeindex, order.limit_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
+                            return fill_event
+                    elif order.order_type == 'STP' and order.stop_price is not None:
+                        # Stop order 限价单的处理，确保还没进场，并且设置好了 stop_price
                         # Stop order 不是 Stop loss!!!
-                        # check https://www.babypips.com/learn/forex/types-of-orders
-                        # TODO:
-                        pass
-                elif order.exit_price is None:
+                        # 具体区别查看 https://www.babypips.com/learn/forex/types-of-orders
+
+                        # stop order 限价单的处理，确保还没进场，并且设置好了 stop_price
+                        if order.direction == 'BUY' and latest_bar['high'] > order.stop_price:
+                            # 达到了进场条件，进场。实际应该是 ask high = stop price的时候
+                            # 触发一个 MKT 的买单，这里就略过了这个过程，直接把订单成交，
+                            # 确保这个订单发生在当前bar的时间结束之前
+
+                            # TODO: 时间应该是当前bar和之前一个bar之间的某一个时间。
+                            order.entry_price = timeindex
+                            # 简单的使用了 limit price，实际情况可能会更好的价格
+                            order.entry_price = order.stop_price
+                            fill_event = FillEvent(order, timeindex, order.stop_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
+                            return fill_event
+
+                        if order.direction == 'SELL' and latest_bar['low'] < order.stop_price:
+                            # 达到了进场条件，进场。实际应该是 bid low = stop price 的时候
+                            # 触发一个 MKT 的卖单，这里就略过了这个过程，直接把订单成交，
+                            # 确保这个订单发生在当前bar的时间结束之前
+
+                            # TODO: 时间应该是当前bar和之前一个bar之间的某一个时间。
+                            order.entry_price = timeindex
+                            # 简单的使用了 limit price，实际情况可能会更好的价格
+                            order.entry_price = order.stop_price
+                            fill_event = FillEvent(order, timeindex, order.stop_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
+                            return fill_event
+                elif order.entry_price is not None and order.exit_price is None:
+                    # 处理已经进场的单子，触发止损 stop 或者止盈 limit
                     # stop_loss 和 profit target 的处理
                     print()
                     if order.stop_loss is not None:
@@ -164,4 +203,6 @@ class SimulatedExecutionHandler(ExecutionHandler):
 
         elif event.type == 'ORDER' and \
             (event.order_type == 'LMT' or event.order_type == 'STP'):
+            # 如果是限价单 limit/stop order，直接把订单放入订单池 self.all_orders
+            # TODO: 理论上这个订单不会立即成交的吧？
             self.all_orders.append(event)
