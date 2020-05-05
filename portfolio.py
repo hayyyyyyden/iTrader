@@ -76,6 +76,7 @@ class NaivePortfolio(Portfolio):
         print(self.all_holdings)
 
         self.all_orders = {}
+        self.all_fills = []
 
     def construct_all_positions(self):
         """
@@ -211,6 +212,9 @@ class NaivePortfolio(Portfolio):
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
             self.update_orders_from_fill(event)
+            fill = vars(event)
+            fill['order'] = event.order.order_id
+            self.all_fills.append(fill)
 
     def generate_naive_order(self, signal):
         """
@@ -308,5 +312,7 @@ class NaivePortfolio(Portfolio):
 
         self.order_history.to_csv('all_orders.csv')
         print(self.order_history)
+
+        pd.DataFrame(self.all_fills).to_csv('all_fills.csv')
 
         return stats

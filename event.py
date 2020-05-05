@@ -124,6 +124,7 @@ class FillEvent(Event):
         """
 
         self.type = 'FILL'
+        self.fill_id = uuid.uuid4()
         self.order = order
         self.timeindex = timeindex
         self.price = price
