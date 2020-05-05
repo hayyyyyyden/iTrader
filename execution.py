@@ -75,8 +75,16 @@ class SimulatedExecutionHandler(ExecutionHandler):
                 if order.symbol != symbol:
                     continue
                 if order.entry_price is None:
-                    # LMT order 限价单的处理
-                    pass
+                    if order.order_type == 'LMT' and order.limit_price is not None:
+                        # Limit order 限价单的处理，确保还没进场，并且设置好了 limit price
+                        # TODO:
+                        pass
+                    elif order.order_type == 'LMT' and order.stop_price is not None:
+                        # Stop order 限价单的处理，确保还没进场，并且设置好了 stop price
+                        # Stop order 不是 Stop loss!!!
+                        # check https://www.babypips.com/learn/forex/types-of-orders
+                        # TODO:
+                        pass
                 elif order.exit_price is None:
                     # stop_loss 和 profit target 的处理
                     print()
@@ -124,9 +132,6 @@ class SimulatedExecutionHandler(ExecutionHandler):
 
         return None
 
-
-
-
     def execute_order(self, event):
         """
         Simply converts Order objects into Fill objects naively,
@@ -157,5 +162,6 @@ class SimulatedExecutionHandler(ExecutionHandler):
                                    event.direction, 0.01)
             self.events.put(fill_event)
 
-        elif event.type == 'ORDER' and event.order_type == 'LMT':
+        elif event.type == 'ORDER' and \
+            (event.order_type == 'LMT' or event.order_type == 'STP'):
             self.all_orders.append(event)

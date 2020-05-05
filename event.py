@@ -55,7 +55,8 @@ class OrderEvent(Event):
     """
 
     def __init__(self, symbol, order_type, quantity, direction,
-                 limit_price=None, stop_loss=None, profit_target=None):
+                 limit_price=None, stop_loss=None, profit_target=None,
+                 stop_price=None):
         """
         Initialises the order type, setting whether it is
         a Market order ('MKT') or Limit order ('LMT'), has
@@ -64,7 +65,7 @@ class OrderEvent(Event):
 
         Parameters:
         symbol - The instrument to trade.
-        order_type - 'MKT' or 'LMT' for Market or Limit.
+        order_type - 'MKT' or 'LMT' or 'STP' for Market or Limit or Stop.
         quantity - Non-negative integer for quantity.
         direction - 'BUY' or 'SELL' for long or short.
         """
@@ -78,6 +79,7 @@ class OrderEvent(Event):
         self.stop_loss = stop_loss
         self.profit_target = profit_target
         self.limit_price = limit_price  # muse be set when order_type is LMT
+        self.stop_price = stop_price # must be set when order_type is STP
         self.entry_price = None
         self.exit_price = None
         self.entry_time = None
