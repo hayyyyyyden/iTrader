@@ -29,14 +29,16 @@ class SignalEvent(Event):
     This is received by a Portfolio object and acted upon.
     """
 
-    def __init__(self, strategy_id, symbol, datetime, signal_type, strength=100):
+    def __init__(self, symbol, datetime, signal_type, order_type='MKT',
+                limit_price=None, stop_loss=None, profit_target=None,
+                stop_price=None, quantity=10000, strategy_id=1):
         """
         Initialises the SignalEvent.
 
         Parameters:
         symbol - The ticker symbol, e.g. 'GOOG'.
         datetime - The timestamp at which the signal was generated.
-        signal_type - 'LONG' or 'SHORT'.
+        signal_type - 'LONG' or 'SHORT' or 'EXIT'.
         """
 
         self.type = 'SIGNAL'
@@ -44,7 +46,13 @@ class SignalEvent(Event):
         self.symbol = symbol
         self.datetime = datetime
         self.signal_type = signal_type
-        self.strength = strength
+        self.quantity = quantity
+        self.stop_loss = stop_loss
+        self.profit_target = profit_target
+        self.limit_price = limit_price  # muse be set when order_type is LMT
+        self.stop_price = stop_price # must be set when order_type is STP
+        self.order_type = order_type
+
 
 
 class OrderEvent(Event):
@@ -54,9 +62,7 @@ class OrderEvent(Event):
     quantity and a direction.
     """
 
-    def __init__(self, symbol, order_type, quantity, direction,
-                 limit_price=None, stop_loss=None, profit_target=None,
-                 stop_price=None):
+    def __init__(self, signal, quantity, direction):
         """
         Initialises the order type, setting whether it is
         a Market order ('MKT') or Limit order ('LMT'), has
@@ -64,7 +70,7 @@ class OrderEvent(Event):
         'SELL').
 
         Parameters:
-        symbol - The instrument to trade.
+        signal - The signal to generate the order.
         order_type - 'MKT' or 'LMT' or 'STP' for Market or Limit or Stop.
         quantity - Non-negative integer for quantity.
         direction - 'BUY' or 'SELL' for long or short.
@@ -72,14 +78,14 @@ class OrderEvent(Event):
 
         self.type = 'ORDER'
         self.order_id = uuid.uuid4()
-        self.symbol = symbol
-        self.order_type = order_type
-        self.quantity = quantity
         self.direction = direction
-        self.stop_loss = stop_loss
-        self.profit_target = profit_target
-        self.limit_price = limit_price  # muse be set when order_type is LMT
-        self.stop_price = stop_price # must be set when order_type is STP
+        self.quantity = quantity
+        self.symbol = signal.symbol
+        self.order_type = signal.order_type
+        self.stop_loss = signal.stop_loss
+        self.profit_target = signal.profit_target
+        self.limit_price = signal.limit_price  # muse be set when order_type is LMT
+        self.stop_price = signal.stop_price # must be set when order_type is STP
         self.entry_price = None
         self.exit_price = None
         self.entry_time = None

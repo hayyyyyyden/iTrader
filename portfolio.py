@@ -227,25 +227,22 @@ class NaivePortfolio(Portfolio):
         """
         order = None
 
-        symbol = signal.symbol
         direction = signal.signal_type
-        strength = signal.strength
 
-        mkt_quantity = floor(100 * strength)
-        cur_quantity = self.current_positions[symbol]
-        order_type = 'MKT'
+        cur_quantity = self.current_positions[signal.symbol]
 
         if direction == 'LONG' and cur_quantity == 0:
             # 新的多单
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'BUY')
-        if direction == 'SHORT' and cur_quantity == 0:
+            order = OrderEvent(signal, signal.quantity, 'BUY')
+        if direction == 'SHORT' and cur_quantity == kjk0:
             # 新的空单
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'SELL')
+            order = OrderEvent(signal, signal.quantity, 'SELL')
 
+        # EXIT 表示清空当前的多单或者空单
         if direction == 'EXIT' and cur_quantity > 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL')
+            order = OrderEvent(signal, abs(cur_quantity), 'SELL')
         if direction == 'EXIT' and cur_quantity < 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY')
+            order = OrderEvent(signal, abs(cur_quantity), 'BUY')
         return order
 
     def update_signal(self, event):
@@ -302,7 +299,7 @@ class NaivePortfolio(Portfolio):
         stats = [("Total Return", "%0.2f%%" % ((total_return - 1.0) * 100.0)),
                  ("Sharpe Ratio", "%0.2f" % sharpe_ratio),
                  ("Max Drawdown", "%0.2f%%" % (max_dd * 100.0)),
-                 ("Drawdown Duration", "%d" % dd_duration)]
+                 ("Drawdown Duration", "{}".format(dd_duration))]
         print('======')
         print(self.current_holdings)
         print(self.current_positions)
