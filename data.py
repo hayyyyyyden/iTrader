@@ -116,7 +116,6 @@ class HistoricCSVDataHandler(DataHandler):
             self.symbol_data[s] = pd.io.parsers.read_csv(fn,
                                       header=0, index_col=0,
                                       names=['datetime','open',
-                                      'high','low','close', 'volume','adj_close']
                                       'high','low','close']
                                   )
             self.symbol_data[s].sort_index(inplace=True)
@@ -237,6 +236,6 @@ class HistoricCSVDataHandler(DataHandler):
 
 if __name__ == "__main__":
     import queue
-    d = HistoricCSVDataHandler(queue.Queue(), './data', ['AAPL'])
+    d = HistoricCSVDataHandler(queue.Queue(), './data/H4', ['AUD_USD_H4'])
     d.update_bars()
-    print(d.get_latest_bars('AAPL'))
+    print(d.get_latest_bars('AUD_USD_H4'))

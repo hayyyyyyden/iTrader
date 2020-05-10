@@ -83,8 +83,8 @@ class MovingAverageCrossStrategy(Strategy):
                         self.bought[s] = 'OUT'
 
 if __name__ == "__main__":
-    csv_dir = './data/' # CHANGE THIS!
-    symbol_list = ['AAPL', 'AUDUSD_D']
+    csv_dir = './data/H4' # CHANGE THIS!
+    symbol_list = ['AUD_USD_H4']
     initial_capital = 100000.0
     heartbeat = 0.0
     start_date = dt(2019, 4, 24, 0, 0, 0)
