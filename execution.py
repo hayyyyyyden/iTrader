@@ -80,7 +80,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                         if order.direction == 'BUY' and latest_bar['low'] < order.limit_price:
                             # 达到了进场条件，进场。实际应该是 ask low <= 才执行，买单要看 ask
                             # TODO: 时间应该是当前bar和之前一个bar之间的某一个时间。
-                            order.entry_price = timeindex
+                            order.entry_time = timeindex
                             # 简单的使用了 limit price，实际情况可能会更好的价格
                             order.entry_price = order.limit_price
                             fill_event = FillEvent(order, timeindex, order.limit_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
@@ -89,7 +89,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                         if order.direction == 'SELL' and latest_bar['high'] > order.limit_price:
                             # 达到了进场条件，进场。实际应该是 bid high >= 才执行，卖单要看 bid
                             # TODO: 时间应该是当前bar和之前一个bar之间的某一个时间。
-                            order.entry_price = timeindex
+                            order.entry_time = timeindex
                             # 简单的使用了 limit price，实际情况可能会更好的价格
                             order.entry_price = order.limit_price
                             fill_event = FillEvent(order, timeindex, order.limit_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
@@ -106,7 +106,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             # 确保这个订单发生在当前bar的时间结束之前
 
                             # TODO: 时间应该是当前bar和之前一个bar之间的某一个时间。
-                            order.entry_price = timeindex
+                            order.entry_time = timeindex
                             # 简单的使用了 limit price，实际情况可能会更好的价格
                             order.entry_price = order.stop_price
                             fill_event = FillEvent(order, timeindex, order.stop_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
@@ -118,7 +118,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             # 确保这个订单发生在当前bar的时间结束之前
 
                             # TODO: 时间应该是当前bar和之前一个bar之间的某一个时间。
-                            order.entry_price = timeindex
+                            order.entry_time = timeindex
                             # 简单的使用了 limit price，实际情况可能会更好的价格
                             order.entry_price = order.stop_price
                             fill_event = FillEvent(order, timeindex, order.stop_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
