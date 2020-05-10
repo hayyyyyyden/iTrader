@@ -182,7 +182,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
         if event.type == 'ORDER' and event.order_type == 'MKT':
             # Now we are opening a new order 按照市场价开新单
             timeindex = self.bars.get_latest_bar_datetime(event.symbol)
-            price = self.bars.get_latest_bar_value(event.symbol, "adj_close")
+            price = self.bars.get_latest_bar_value(event.symbol, "close")
             order = self._find_open_order(event.symbol)
             if order is None:
                 # 找不到，新建一个 order，更新它的进场时间和价格

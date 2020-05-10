@@ -149,7 +149,7 @@ class NaivePortfolio(Portfolio):
             # print(s)
             # print(bars[s][0][1].values[4])
             market_value = self.current_positions[s] * \
-                self.bars.get_latest_bar_value(s, "adj_close")
+                self.bars.get_latest_bar_value(s, "close")
             dh[s] = market_value
             dh['total'] += market_value
 
@@ -192,7 +192,7 @@ class NaivePortfolio(Portfolio):
         # Update holdings list with new quantities
         # This is estimated cause we do NOT know the cost of fill
         # in a simulated environment. (there are slippery etc in real.)
-        fill_cost = self.bars.get_latest_bar_value(fill.symbol, "adj_close")
+        fill_cost = self.bars.get_latest_bar_value(fill.symbol, "close")
         cost = fill_dir * fill_cost * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['commission'] += fill.commission
