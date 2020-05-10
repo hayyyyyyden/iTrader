@@ -210,7 +210,6 @@ class HistoricCSVDataHandler(DataHandler):
         """
         try:
             bars_list = self.get_latest_bars(symbol, N)
-            print(bars_list)
         except KeyError:
             print("That symbol is not available in the historical data set.")
             raise
