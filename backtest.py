@@ -127,7 +127,7 @@ class Backtest(object):
 
         print("Signals: %s" % self.signals)
         print("Orders: %s" % self.orders)
-        print("Fills: %s" % self.fills)
+        print("Fills: %s" % len(self.portfolio.all_fills))
 
     def simulate_trading(self):
         """

@@ -69,7 +69,7 @@ class MovingAverageCrossStrategy(Strategy):
                         print("LONG: %s" % bar_date)
                         sig_dir = 'LONG'
                         signal = SignalEvent(
-                            1, symbol, cur_date, sig_dir, 1.0
+                            1, symbol, cur_date, sig_dir, 10000
                         )
                         self.events.put(signal)
                         self.bought[s] = 'LONG'
@@ -77,7 +77,7 @@ class MovingAverageCrossStrategy(Strategy):
                         print("SHORT: %s" % bar_date)
                         sig_dir = 'EXIT'
                         signal = SignalEvent(
-                            1, symbol, cur_date, sig_dir, 1.0
+                            1, symbol, cur_date, sig_dir, 10000
                         )
                         self.events.put(signal)
                         self.bought[s] = 'OUT'
