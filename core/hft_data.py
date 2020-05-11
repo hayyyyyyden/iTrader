@@ -5,8 +5,8 @@ import os, os.path
 import pandas as pd
 import numpy as np
 
-from event import MarketEvent
-from data import DataHandler
+from .event import MarketEvent
+from .data import DataHandler
 
 class HistoricCSVDataHandlerHFT(DataHandler):
     """

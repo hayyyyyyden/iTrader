@@ -6,9 +6,9 @@ import queue
 from abc import ABCMeta, abstractmethod
 from math import floor
 
-from event import FillEvent, OrderEvent
-from performance import create_sharpe_ratio, create_drawdowns
-from portfolio import Portfolio
+from .event import FillEvent, OrderEvent
+from .performance import create_sharpe_ratio, create_drawdowns
+from .portfolio import Portfolio
 
 
 class PortfolioHFT(Portfolio):

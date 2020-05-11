@@ -9,8 +9,8 @@ import copy
 from abc import ABCMeta, abstractmethod
 from math import floor
 
-from event import FillEvent, OrderEvent
-from performance import create_sharpe_ratio, create_drawdowns
+from .event import FillEvent, OrderEvent
+from .performance import create_sharpe_ratio, create_drawdowns
 
 
 class Portfolio(object):

@@ -5,8 +5,8 @@ from ib.ext.Contract import Contract
 from ib.ext.Order import Order
 from ib.opt import ibConnection, message
 
-from event import FillEvent, OrderEvent
-from execution import ExecutionHandler
+from .event import FillEvent, OrderEvent
+from .execution import ExecutionHandler
 
 
 class IBExecutionHandler(ExecutionHandler):

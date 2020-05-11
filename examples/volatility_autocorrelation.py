@@ -1,12 +1,16 @@
-from datetime import datetime as dt
+import sys
+sys.path.append("./")
+
 import numpy as np
-from strategy import Strategy
-from event import SignalEvent
-from backtest import Backtest
-from data import HistoricCSVDataHandler
-from execution import SimulatedExecutionHandler
-from portfolio import NaivePortfolio
+from datetime import datetime as dt
 from datetime import datetime, timedelta
+
+from core.strategy import Strategy
+from core.event import SignalEvent
+from core.backtest import Backtest
+from core.data import HistoricCSVDataHandler
+from core.execution import SimulatedExecutionHandler
+from core.portfolio import NaivePortfolio
 
 # Volatility Autocorrelation Strategy
 class VolatilityAutocorrelationStrategy(Strategy):

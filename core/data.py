@@ -5,7 +5,7 @@ import os, os.path
 import pandas as pd
 import numpy as np
 
-from event import MarketEvent
+from .event import MarketEvent
 
 class DataHandler(object):
     """

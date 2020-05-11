@@ -91,3 +91,14 @@ class AlphaVantage(object):
                     )
                 )
         return pd.DataFrame(prices, columns=COLUMNS).set_index('Date')
+
+
+if __name__ == "__main__":
+    # Create an AlphaVantage API instance
+    av = AlphaVantage(api_key="Z5UZVXLKA7XOWF67")
+    # Download the Apple Group OHLCV data from 1998-01-02 to 2008-12-31
+    start_date = dt(1998, 1, 2)
+    end_date = dt(2020, 4, 24)
+    print("Obtaining Apple data from AlphaVantage and saving as CSV...")
+    aapl = av.get_daily_historic_data('AAPL', start_date, end_date)
+    aapl.to_csv("./data/xxx.csv", index=True)
