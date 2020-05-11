@@ -39,20 +39,60 @@ iTrader is built upon the idea and code from [this series of tutorial articles](
 
 ## Install
 
-TODO
+1. If you don't have `Python 3` installed on your Mac, install it first by running the following command:
+```
+brew install python3
+```
+2. Clone this repo using
+```
+git clone https://github.com/hayyyyyyden/iTrader.git
+```
+3. `cd iTrader/` into the root directory of this project you just downloaded, then use `pip` to install the requirements:
+```
+pip install -r requirements.txt
+```
+You're all set now.
 
 ## iTrader "Hello, World!" 👋🌍
 
-TODO
+In the root directory of iTrader, run the following python command:
+
+```
+python examples/volatility_autocorrelation.py
+```
+
+It should log output in the terminal like this:
+```
+Creating DataHandler, Strategy, Portfolio and ExecutionHandler
+{'AUD_USD_H4': 0}
+[{'AUD_USD_H4': 0, 'datetime': datetime.datetime(2015, 1, 1, 0, 0)}]
+{'AUD_USD_H4': 0.0, 'cash': 10000, 'commission': 0.0, 'total': 10000}
+[{'AUD_USD_H4': 0.0, 'datetime': datetime.datetime(2015, 1, 1, 0, 0), 'cash': 10000, 'commission': 0.0, 'total': 10000}]
+
+......
+
+<----- K 线时间 2015-05-08 09:00:00 -----> (当前实际时间是 2015-05-08 13:00:00 的第一秒)
+过去 72 个小时, 最高价是 0.80306, 最低价是 0.78633. 波动值 R2 是 167.3 个 Pips.
+当前 R2 波动值满足限制条件: 130 < R2 < 190 
+
+过去 48 个小时, 最高价是 0.80306, 最低价是 0.78633. 波动值 R 是 167.3 个 Pips.
+当前价格是 0.79389. 0.12 倍的 R 是 20.1 个 pips 
+开一个限价的买单 (Limit Buy Order) 在当前价格 0.79389 的 20.1 个 pips 之下，即 0.79188.
+目标盈利 ( profit_target ) 是 0.32 倍的 R，即 53.5 个 pips.
+即, 0.79723
+止损 (stop_loss) 为固定的 50 个 pips.
+即, 0.78688
+19
+
+```
 
 ## Getting Started
 
-TODO
+
 
 ## Documentation
 
-TODO
+
 
 ## Tutorial
 
-TODO
