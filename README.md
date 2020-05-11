@@ -9,7 +9,7 @@
 [![Python 3.7 3.8](https://github.com/hayyyyyyden/iTrader/blob/master/.github/badges/python-badge.svg?raw=true  "iTrader supports Python 3.7 and above")]()
 </p>
 
-<p align="center">
+<p align="left">
   <a href="https://github.com/hayyyyyyden/iTrader">English</a> •
   <a href="https://github.com/hayyyyyyden/iTrader/blob/master/README.ja.md">日本語</a> •
   <a href="https://github.com/hayyyyyyden/iTrader/blob/master/README.zh.md">中文</a>
