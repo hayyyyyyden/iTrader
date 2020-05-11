@@ -2,8 +2,6 @@
   <img src="https://github.com/hayyyyyyden/iTrader/blob/master/.github/logo.png?raw=true" alt="iTrader logo" width="100%">
 </p>
 
-=============
-
 <p align="center">
 
 [![iTrader](https://github.com/hayyyyyyden/iTrader/blob/master/.github/badges/iTrader-hello-world-badge.svg?raw=true  "Run iTrader 'Hello, World!' without installing anything")](#iTrader-hello-world-)
