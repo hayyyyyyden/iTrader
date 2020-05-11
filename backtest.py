@@ -62,7 +62,8 @@ class Backtest(object):
                                             self.events,
                                             self.start_date,
                                             self.initial_capital)
-        self.execution_handler = self.execution_handler_cls(self.events)
+        self.execution_handler = self.execution_handler_cls(self.events,
+                                                            self.data_handler)
 
     def _run_backtest(self):
         """
@@ -76,6 +77,8 @@ class Backtest(object):
             if self.data_handler.continue_backtest == True:
                 self.data_handler.update_bars()
             else:
+                # TODO: Close all open orders 关闭所有未平仓订单
+                # e.g. self.execution_handler.clos_all_open_orders()
                 break
 
             # Handle the events:
@@ -87,6 +90,9 @@ class Backtest(object):
                 else:
                     if event is not None:
                         if event.type == 'MARKET':
+                            fill_event = self.execution_handler.scan_open_orders(event)
+                            if fill_event is not None:
+                                self.portfolio.update_fill(fill_event)
                             self.strategy.calculate_signals(event)
                             self.portfolio.update_timeindex(event)
 
@@ -110,6 +116,7 @@ class Backtest(object):
         """
         self.portfolio.create_equity_curve_dataframe()
         self.portfolio.create_trade_history_dataframe()
+        self.portfolio.create_order_history_dataframe()
 
         print("Creating summary stats...")
         stats = self.portfolio.output_summary_stats()
@@ -120,7 +127,7 @@ class Backtest(object):
 
         print("Signals: %s" % self.signals)
         print("Orders: %s" % self.orders)
-        print("Fills: %s" % self.fills)
+        print("Fills: %s" % len(self.portfolio.all_fills))
 
     def simulate_trading(self):
         """

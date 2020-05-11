@@ -54,10 +54,10 @@ class MovingAverageCrossStrategy(Strategy):
         if event.type == 'MARKET':
             for s in self.symbol_list:
                 bars = self.bars.get_latest_bars_values(
-                    s, "adj_close", N=self.long_window
+                    s, "close", N=self.long_window
                 )
                 bar_date = self.bars.get_latest_bar_datetime(s)
-                if bars is not None and bars != []:
+                if bars is not None and bars.size > 0:
                     short_sma = np.mean(bars[-self.short_window:])
                     long_sma = np.mean(bars[-self.long_window:])
 
@@ -69,7 +69,7 @@ class MovingAverageCrossStrategy(Strategy):
                         print("LONG: %s" % bar_date)
                         sig_dir = 'LONG'
                         signal = SignalEvent(
-                            1, symbol, cur_date, sig_dir, 1.0
+                            1, symbol, cur_date, sig_dir, 10000
                         )
                         self.events.put(signal)
                         self.bought[s] = 'LONG'
@@ -77,14 +77,14 @@ class MovingAverageCrossStrategy(Strategy):
                         print("SHORT: %s" % bar_date)
                         sig_dir = 'EXIT'
                         signal = SignalEvent(
-                            1, symbol, cur_date, sig_dir, 1.0
+                            1, symbol, cur_date, sig_dir, 10000
                         )
                         self.events.put(signal)
                         self.bought[s] = 'OUT'
 
 if __name__ == "__main__":
-    csv_dir = './data/' # CHANGE THIS!
-    symbol_list = ['AAPL', 'AUDUSD_D']
+    csv_dir = './data/H4' # CHANGE THIS!
+    symbol_list = ['AUD_USD_H4']
     initial_capital = 100000.0
     heartbeat = 0.0
     start_date = dt(2019, 4, 24, 0, 0, 0)

@@ -116,7 +116,7 @@ class HistoricCSVDataHandler(DataHandler):
             self.symbol_data[s] = pd.io.parsers.read_csv(fn,
                                       header=0, index_col=0,
                                       names=['datetime','open',
-                                      'high','low','close', 'volume','adj_close']
+                                      'high','low','close']
                                   )
             self.symbol_data[s].sort_index(inplace=True)
 
@@ -136,11 +136,6 @@ class HistoricCSVDataHandler(DataHandler):
             self.symbol_data[s] = self.symbol_data[s].reindex(
                 index=comb_index, method='pad'
             )
-            # 增加一个新的column，计算当前收盘价对昨日收盘价的变化百分比
-            # 使用的是调整后的收盘价 adj_close（除权？）
-            self.symbol_data[s]["returns"] = self.symbol_data[s][
-                "adj_close"
-            ].pct_change().dropna()
             # 生成一个迭代器
             self.symbol_data[s] = self.symbol_data[s].iterrows()
 
@@ -215,7 +210,6 @@ class HistoricCSVDataHandler(DataHandler):
         """
         try:
             bars_list = self.get_latest_bars(symbol, N)
-            print(bars_list)
         except KeyError:
             print("That symbol is not available in the historical data set.")
             raise
@@ -241,6 +235,6 @@ class HistoricCSVDataHandler(DataHandler):
 
 if __name__ == "__main__":
     import queue
-    d = HistoricCSVDataHandler(queue.Queue(), './data', ['AAPL'])
+    d = HistoricCSVDataHandler(queue.Queue(), './data/H4', ['AUD_USD_H4'])
     d.update_bars()
-    print(d.get_latest_bars('AAPL'))
+    print(d.get_latest_bars('AUD_USD_H4'))

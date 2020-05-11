@@ -4,6 +4,7 @@ import datetime
 import numpy as np
 import pandas as pd
 import queue
+import copy
 
 from abc import ABCMeta, abstractmethod
 from math import floor
@@ -73,6 +74,9 @@ class NaivePortfolio(Portfolio):
         self.current_holdings = self.construct_current_holdings()
         print(self.current_holdings)
         print(self.all_holdings)
+
+        self.all_orders = {}
+        self.all_fills = []
 
     def construct_all_positions(self):
         """
@@ -145,7 +149,7 @@ class NaivePortfolio(Portfolio):
             # print(s)
             # print(bars[s][0][1].values[4])
             market_value = self.current_positions[s] * \
-                self.bars.get_latest_bar_value(s, "adj_close")
+                self.bars.get_latest_bar_value(s, "close")
             dh[s] = market_value
             dh['total'] += market_value
 
@@ -188,12 +192,16 @@ class NaivePortfolio(Portfolio):
         # Update holdings list with new quantities
         # This is estimated cause we do NOT know the cost of fill
         # in a simulated environment. (there are slippery etc in real.)
-        fill_cost = self.bars.get_latest_bar_value(fill.symbol, "adj_close")
+        fill_cost = self.bars.get_latest_bar_value(fill.symbol, "close")
         cost = fill_dir * fill_cost * fill.quantity
         self.current_holdings[fill.symbol] += cost
         self.current_holdings['commission'] += fill.commission
         self.current_holdings['cash'] -= (cost + fill.commission)
         self.current_holdings['total'] -= (cost + fill.commission)
+
+    def update_orders_from_fill(self, fill):
+        order = fill.order
+        self.all_orders[order.order_id] = order
 
     def update_fill(self, event):
         """
@@ -203,7 +211,10 @@ class NaivePortfolio(Portfolio):
         if event.type == 'FILL':
             self.update_positions_from_fill(event)
             self.update_holdings_from_fill(event)
-            # self.update_trades_from_fill(event)
+            self.update_orders_from_fill(event)
+            fill = vars(event)
+            fill['order'] = event.order.order_id
+            self.all_fills.append(fill)
 
     def generate_naive_order(self, signal):
         """
@@ -216,23 +227,22 @@ class NaivePortfolio(Portfolio):
         """
         order = None
 
-        symbol = signal.symbol
         direction = signal.signal_type
-        strength = signal.strength
 
-        mkt_quantity = floor(100 * strength)
-        cur_quantity = self.current_positions[symbol]
-        order_type = 'MKT'
+        cur_quantity = self.current_positions[signal.symbol]
 
         if direction == 'LONG' and cur_quantity == 0:
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'BUY')
-        if direction == 'SHORT' and cur_quantity == 0:
-            order = OrderEvent(symbol, order_type, mkt_quantity, 'SELL')
+            # 新的多单
+            order = OrderEvent(signal, signal.quantity, 'BUY')
+        if direction == 'SHORT' and cur_quantity == kjk0:
+            # 新的空单
+            order = OrderEvent(signal, signal.quantity, 'SELL')
 
+        # EXIT 表示清空当前的多单或者空单
         if direction == 'EXIT' and cur_quantity > 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'SELL')
+            order = OrderEvent(signal, abs(cur_quantity), 'SELL')
         if direction == 'EXIT' and cur_quantity < 0:
-            order = OrderEvent(symbol, order_type, abs(cur_quantity), 'BUY')
+            order = OrderEvent(signal, abs(cur_quantity), 'BUY')
         return order
 
     def update_signal(self, event):
@@ -260,9 +270,18 @@ class NaivePortfolio(Portfolio):
         Creates a pandas DataFrame from the all_positions
         list of dictionaries.
         """
+        print(self.all_positions)
         trade = pd.DataFrame(self.all_positions)
         trade.set_index('datetime', inplace=True)
         self.trade_history = trade
+
+    def create_order_history_dataframe(self):
+        """
+        Creates a pandas DataFrame from the all_positions
+        list of dictionaries.
+        """
+        orders = pd.DataFrame([vars(c) for c in self.all_orders.values()])
+        self.order_history = orders
 
     def output_summary_stats(self):
         """
@@ -280,11 +299,17 @@ class NaivePortfolio(Portfolio):
         stats = [("Total Return", "%0.2f%%" % ((total_return - 1.0) * 100.0)),
                  ("Sharpe Ratio", "%0.2f" % sharpe_ratio),
                  ("Max Drawdown", "%0.2f%%" % (max_dd * 100.0)),
-                 ("Drawdown Duration", "%d" % dd_duration)]
+                 ("Drawdown Duration", "{}".format(dd_duration))]
         print('======')
         print(self.current_holdings)
         print(self.current_positions)
         print('======')
         self.equity_curve.to_csv('equity.csv')
         self.trade_history.to_csv('all_positions.csv')
+
+        self.order_history.to_csv('all_orders.csv')
+        print(self.order_history)
+
+        pd.DataFrame(self.all_fills).to_csv('all_fills.csv')
+
         return stats
