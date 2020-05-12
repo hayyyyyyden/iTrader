@@ -90,9 +90,10 @@ class Backtest(object):
                 else:
                     if event is not None:
                         if event.type == 'MARKET':
-                            fill_event = self.execution_handler.scan_open_orders(event)
-                            if fill_event is not None:
-                                self.portfolio.update_fill(fill_event)
+                            fill_events = self.execution_handler.scan_open_orders(event)
+                            if fill_events:
+                                self.fills += len(fill_events)
+                                self.portfolio.update_fills(fill_events)
                             self.strategy.calculate_signals(event)
                             self.portfolio.update_timeindex(event)
 

@@ -216,6 +216,14 @@ class NaivePortfolio(Portfolio):
             fill['order'] = event.order.order_id
             self.all_fills.append(fill)
 
+    def update_fills(self, events):
+        """
+        Updates the portfolio current positions and holdings
+        from a list of FillEvent.
+        """
+        for event in events:
+            self.update_fill(event)
+
     def generate_naive_order(self, signal):
         """
         Simply transacts an OrderEvent object as a constant quantity

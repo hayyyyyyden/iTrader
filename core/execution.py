@@ -68,6 +68,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
 
     def scan_open_orders(self, event):
         for symbol in self.bars.symbol_list:
+            fill_events = []
             timeindex = self.bars.get_latest_bar_datetime(symbol)
             latest_bar = self.bars.get_latest_bar(symbol)[1]
 
@@ -84,7 +85,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             # 简单的使用了 limit price，实际情况可能会更好的价格
                             order.entry_price = order.limit_price
                             fill_event = FillEvent(order, timeindex, order.limit_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
-                            return fill_event
+                            fill_events.append(fill_event)
 
                         if order.direction == 'SELL' and latest_bar['high'] > order.limit_price:
                             # 达到了进场条件，进场。实际应该是 bid high >= 才执行，卖单要看 bid
@@ -93,7 +94,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             # 简单的使用了 limit price，实际情况可能会更好的价格
                             order.entry_price = order.limit_price
                             fill_event = FillEvent(order, timeindex, order.limit_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
-                            return fill_event
+                            fill_events.append(fill_event)
                     elif order.order_type == 'STP' and order.stop_price is not None:
                         # Stop order 限价单的处理，确保还没进场，并且设置好了 stop_price
                         # Stop order 不是 Stop loss!!!
@@ -110,7 +111,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             # 简单的使用了 limit price，实际情况可能会更好的价格
                             order.entry_price = order.stop_price
                             fill_event = FillEvent(order, timeindex, order.stop_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
-                            return fill_event
+                            fill_events.append(fill_event)
 
                         if order.direction == 'SELL' and latest_bar['low'] < order.stop_price:
                             # 达到了进场条件，进场。实际应该是 bid low = stop price 的时候
@@ -122,11 +123,10 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             # 简单的使用了 limit price，实际情况可能会更好的价格
                             order.entry_price = order.stop_price
                             fill_event = FillEvent(order, timeindex, order.stop_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
-                            return fill_event
+                            fill_events.append(fill_event)
                 elif order.entry_price is not None and order.exit_price is None:
                     # 处理已经进场的单子，触发止损 stop 或者止盈 limit
                     # stop_loss 和 profit target 的处理
-                    print()
                     if order.stop_loss is not None:
                         if order.direction == 'BUY' and latest_bar['low'] <= order.stop_loss:
                             # 触发止损
@@ -136,7 +136,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             order.profit = (order.exit_price - order.entry_price) * order.quantity
                             # TODO: 这里的方向是 hardcoded，因为和order是反着的
                             fill_event = FillEvent(order, timeindex, order.exit_price,order.symbol,'LOCAL', order.quantity,'SELL', 0.01)
-                            return fill_event
+                            fill_events.append(fill_event)
 
                         if order.direction == 'SELL' and latest_bar['high'] >= order.stop_loss:
                            # 触发止损
@@ -146,7 +146,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                            order.profit = (order.exit_price - order.entry_price) * order.quantity
                            # TODO: 这里的方向是 hardcoded，因为和order是反着的
                            fill_event = FillEvent(order, timeindex, order.exit_price, order.symbol,'LOCAL', order.quantity,'BUY', 0.01)
-                           return fill_event
+                           fill_events.append(fill_event)
 
                     if order.profit_target is not None:
                         if order.direction == 'BUY' and latest_bar['high'] >= order.profit_target:
@@ -157,7 +157,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             order.profit = (order.profit_target - order.entry_price) * order.quantity
                             # TODO: 这里的方向是 hardcoded，因为和order是反着的
                             fill_event = FillEvent(order, timeindex, order.exit_price, order.symbol,'LOCAL', order.quantity,'SELL', 0.01)
-                            return fill_event
+                            fill_events.append(fill_event)
 
                         if order.direction == 'SELL' and latest_bar['low'] <= order.profit_target:
                             # 触发止盈
@@ -167,9 +167,9 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             order.profit = (order.profit_target - order.entry_price) * order.quantity
                             # TODO: 这里的方向是 hardcoded，因为和 order 是反着的
                             fill_event = FillEvent(order, timeindex, order.exit_price, order.symbol,'LOCAL', order.quantity,'BUY', 0.01)
-                            return fill_event
+                            fill_events.append(fill_event)
 
-        return None
+        return fill_events
 
     def execute_order(self, event):
         """
