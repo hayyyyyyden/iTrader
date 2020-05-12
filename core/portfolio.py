@@ -300,18 +300,28 @@ class NaivePortfolio(Portfolio):
         returns = self.equity_curve['returns']
         pnl = self.equity_curve['equity_curve']
 
-        sharpe_ratio = create_sharpe_ratio(returns)
+        sharpe_ratio = create_sharpe_ratio(returns, periods=252*6)
         drawdown, max_dd, dd_duration = create_drawdowns(pnl)
         self.equity_curve['drawdown'] = drawdown
 
-        stats = [("Total Return", "%0.2f%%" % ((total_return - 1.0) * 100.0)),
-                 ("Sharpe Ratio", "%0.2f" % sharpe_ratio),
-                 ("Max Drawdown", "%0.2f%%" % (max_dd * 100.0)),
-                 ("Drawdown Duration", "{}".format(dd_duration))]
-        print('======')
-        print(self.current_holdings)
-        print(self.current_positions)
-        print('======')
+        profit = self.order_history['profit'].sum()
+        profit = round(profit, 1)
+        total_profit = sum(self.order_history[self.order_history['profit'] > 0].profit)
+        total_profit = round(total_profit, 1)
+        total_loss = sum(self.order_history[self.order_history['profit'] < 0].profit)
+        total_loss = round(total_loss, 1)
+        trade_no = len(self.order_history)
+        winrate = round(len(self.order_history[self.order_history['profit'] > 0])/trade_no, 3)
+
+        stats = [("Profit", "{} pips.".format(profit)),
+                 ("Annualized Sharpe Ratio", "%0.1f" % sharpe_ratio),
+                 ("Max Drawdown", "%0.1f%%" % (max_dd * 100.0)),
+                 ("Drawdown Duration", "{} hours".format(dd_duration * 4)),
+                 ("Win rate {}%".format(winrate * 100)),
+                 ("Trade number {}".format(trade_no)),
+                 ("Total Profit {}".format(total_profit)),
+                 ("Total Loss {}".format(total_loss))]
+
         self.equity_curve.to_csv('equity.csv')
         self.trade_history.to_csv('all_positions.csv')
 

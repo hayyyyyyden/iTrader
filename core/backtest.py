@@ -126,10 +126,6 @@ class Backtest(object):
         print(self.portfolio.equity_curve.tail(10))
         pprint.pprint(stats)
 
-        print("Signals: %s" % self.signals)
-        print("Orders: %s" % self.orders)
-        print("Fills: %s" % len(self.portfolio.all_fills))
-
     def simulate_trading(self):
         """
         Simulate the backtest and outputs portfolio performance.
