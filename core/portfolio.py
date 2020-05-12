@@ -324,9 +324,7 @@ class NaivePortfolio(Portfolio):
 
         self.equity_curve.to_csv('equity.csv')
         self.trade_history.to_csv('all_positions.csv')
-
         self.order_history.to_csv('all_orders.csv')
-        print(self.order_history)
 
         pd.DataFrame(self.all_fills).to_csv('all_fills.csv')
 
