@@ -66,9 +66,9 @@ Creating DataHandler, Strategy, Portfolio and ExecutionHandler
 ...
 Creating summary stats...
 [('Profit', '4990.9 pips.'),
- ('Annualized Sharpe Ratio', 'nan'),
- ('Max Drawdown', 'inf%'),
- ('Drawdown Duration', 'nan hours'),
+ ('Annualized Sharpe Ratio', '2.1'),
+ ('Max Drawdown', '14.8%'),
+ ('Drawdown Duration', '976.0 hours'),
  'Win rate 60.6%',
  'Trade number 944',
  'Total Profit 23390.9',
@@ -77,4 +77,8 @@ Creating equity curve...
 ```
 Then a PnL curve for this strategy.
 
+<p align="left">
+  <img src="https://github.com/hayyyyyyden/iTrader/blob/master/.github/demo_result.png?raw=true" alt="demo result" width="60%">
+</p>
 
+We got a pretty decent nearly 50% return in a year and a sharpe ratio of 2.1 in this strategy. Not bad, isn't it?
