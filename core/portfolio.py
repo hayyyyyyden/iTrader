@@ -239,10 +239,10 @@ class NaivePortfolio(Portfolio):
 
         cur_quantity = self.current_positions[signal.symbol]
 
-        if direction == 'LONG' and cur_quantity == 0:
+        if direction == 'LONG':
             # 新的多单
             order = OrderEvent(signal, signal.quantity, 'BUY')
-        if direction == 'SHORT' and cur_quantity == kjk0:
+        if direction == 'SHORT':
             # 新的空单
             order = OrderEvent(signal, signal.quantity, 'SELL')
 
