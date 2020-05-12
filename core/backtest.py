@@ -1,7 +1,7 @@
-import datetime
 import pprint
 import queue
 import time
+import matplotlib.pyplot as plt
 
 class Backtest(object):
     """
@@ -121,9 +121,20 @@ class Backtest(object):
 
         print("Creating summary stats...")
         stats = self.portfolio.output_summary_stats()
+        pprint.pprint(stats)
 
         print("Creating equity curve...")
-        pprint.pprint(stats)
+        # Plot the equity curve
+        fig = plt.figure()
+
+        # Set the outer colour to white
+        fig.patch.set_facecolor('white')
+
+        ax1 = fig.add_subplot(111, ylabel='Portfolio value, %')
+        self.portfolio.equity_curve['equity_curve'].plot(ax=ax1, color="blue", lw=2.)
+        plt.grid(True)
+        plt.tight_layout()
+        plt.show()
 
     def simulate_trading(self):
         """
