@@ -32,10 +32,7 @@ iTrader is built upon the idea and code from [this series of tutorial articles](
 ## Table of Contents
 
 - [Install](#install)
-- [iTrader "Hello, World!" 👋🌍](#iTrader-hello-world-)
-- [Getting Started](#getting-started)
-- [Documentation](#documentation)
-- [Tutorial](#tutorial)
+- ["Hello, World!" 👋🌍](#hello-world-)
 
 ## Install
 
@@ -53,7 +50,7 @@ pip install -r requirements.txt
 ```
 You're all set now.
 
-## iTrader "Hello, World!" 👋🌍
+## "Hello, World!" 👋🌍
 
 In the root directory of iTrader, run the following python command:
 
@@ -85,14 +82,4 @@ Creating DataHandler, Strategy, Portfolio and ExecutionHandler
 19
 
 ```
-
-## Getting Started
-
-
-
-## Documentation
-
-
-
-## Tutorial
 
