@@ -61,25 +61,20 @@ python examples/volatility_autocorrelation.py
 It should log output in the terminal like this:
 ```
 Creating DataHandler, Strategy, Portfolio and ExecutionHandler
-{'AUD_USD_H4': 0}
-[{'AUD_USD_H4': 0, 'datetime': datetime.datetime(2015, 1, 1, 0, 0)}]
-{'AUD_USD_H4': 0.0, 'cash': 10000, 'commission': 0.0, 'total': 10000}
-[{'AUD_USD_H4': 0.0, 'datetime': datetime.datetime(2015, 1, 1, 0, 0), 'cash': 10000, 'commission': 0.0, 'total': 10000}]
-
-......
-
-<----- K 线时间 2015-05-08 09:00:00 -----> (当前实际时间是 2015-05-08 13:00:00 的第一秒)
-过去 72 个小时, 最高价是 0.80306, 最低价是 0.78633. 波动值 R2 是 167.3 个 Pips.
-当前 R2 波动值满足限制条件: 130 < R2 < 190 
-
-过去 48 个小时, 最高价是 0.80306, 最低价是 0.78633. 波动值 R 是 167.3 个 Pips.
-当前价格是 0.79389. 0.12 倍的 R 是 20.1 个 pips 
-开一个限价的买单 (Limit Buy Order) 在当前价格 0.79389 的 20.1 个 pips 之下，即 0.79188.
-目标盈利 ( profit_target ) 是 0.32 倍的 R，即 53.5 个 pips.
-即, 0.79723
-止损 (stop_loss) 为固定的 50 个 pips.
-即, 0.78688
-19
-
+...
+...
+...
+Creating summary stats...
+[('Profit', '4990.9 pips.'),
+ ('Annualized Sharpe Ratio', 'nan'),
+ ('Max Drawdown', 'inf%'),
+ ('Drawdown Duration', 'nan hours'),
+ 'Win rate 60.6%',
+ 'Trade number 944',
+ 'Total Profit 23390.9',
+ 'Total Loss -18400.0']
+Creating equity curve...
 ```
+Then a PnL curve for this strategy.
+
 
