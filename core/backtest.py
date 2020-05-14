@@ -2,6 +2,9 @@ import pprint
 import queue
 import time
 import matplotlib.pyplot as plt
+from datetime import datetime
+import pandas as pd
+from pathlib import Path
 
 class Backtest(object):
     """
@@ -133,10 +136,31 @@ class Backtest(object):
         # Set the outer colour to white
         fig.patch.set_facecolor('white')
 
-        ax1 = fig.add_subplot(111, ylabel='Portfolio value, %')
+        ax1 = fig.add_subplot(211, ylabel='Portfolio value, %')
         self.portfolio.equity_curve['equity_curve'].plot(ax=ax1, color="blue", lw=2.)
         plt.grid(True)
         plt.tight_layout()
+
+        # Temp implementation
+        # TODO: refactor
+
+        symbol = self.symbol_list[0]
+
+        # Plot the returns
+        ax2 = fig.add_subplot(212, ylabel='{} close price'.format(symbol))
+        self.data_handler.raw_data[symbol]['close'].plot(ax=ax2, color="black", lw=2.)
+
+        s_name = self.strategy_cls.__name__
+        dt_string = datetime.now().strftime("%Y%m%d_%H%M")
+        fd_name = "{}_{}".format(s_name, dt_string)
+        Path("./results/{}".format(fd_name)).mkdir(parents=True, exist_ok=True)
+
+        fig.savefig('./results/{}/PnL.png'.format(fd_name), dpi=100)
+        self.portfolio.equity_curve.to_csv('./results/{}/equity.csv'.format(fd_name))
+        self.portfolio.trade_history.to_csv('./results/{}/all_positions.csv'.format(fd_name))
+        self.portfolio.order_history.to_csv('./results/{}/all_orders.csv'.format(fd_name))
+        pd.DataFrame(self.portfolio.all_fills).to_csv('./results/{}/all_fills.csv'.format(fd_name))
+
         plt.show()
 
     def simulate_trading(self):

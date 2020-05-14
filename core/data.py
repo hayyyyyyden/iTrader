@@ -95,6 +95,7 @@ class HistoricCSVDataHandler(DataHandler):
         self.symbol_list = symbol_list
 
         self.symbol_data = {}
+        self.raw_data = {}
         self.latest_symbol_data = {}
         self.continue_backtest = True
 
@@ -118,6 +119,8 @@ class HistoricCSVDataHandler(DataHandler):
                                       names=['datetime','open',
                                       'high','low','close']
                                   )
+            self.raw_data[s] = pd.read_csv(fn,header=0, index_col=0,names=['datetime','open','high','low','close'])
+            self.raw_data[s].sort_index(inplace=True)
             self.symbol_data[s].sort_index(inplace=True)
 
             # Combine the index to pad forward values

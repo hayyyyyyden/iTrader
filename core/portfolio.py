@@ -322,10 +322,4 @@ class NaivePortfolio(Portfolio):
                  ("Total Profit {}".format(total_profit)),
                  ("Total Loss {}".format(total_loss))]
 
-        self.equity_curve.to_csv('equity.csv')
-        self.trade_history.to_csv('all_positions.csv')
-        self.order_history.to_csv('all_orders.csv')
-
-        pd.DataFrame(self.all_fills).to_csv('all_fills.csv')
-
         return stats
