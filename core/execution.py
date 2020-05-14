@@ -220,3 +220,29 @@ class SimulatedExecutionHandler(ExecutionHandler):
             # TODO: 理论上这个订单不会立即成交的吧？
             self._close_sametype_pending_orders_for(event)
             self.all_orders.append(event)
+
+    def execute_action(self, event):
+        if event.type == 'ACTION' and event.action_type == 'CLOSE_ALL':
+            self._close_all_orders_for(event.symbol)
+
+    def _close_all_orders_for(self, symbol):
+        # 遍历所有同类型的订单
+        for order in self.all_orders[:]:
+            if order.symbol != symbol:
+                continue
+            if order.entry_price is None:
+                # 没进场的取消
+                self.all_orders.remove(order)
+            elif order.exit_price is None:
+                # 进场的开市价单离场，立即执行
+                timeindex = self.bars.get_latest_bar_datetime(symbol)
+                price = self.bars.get_latest_bar_value(symbol, "close")
+                order.exit_time = timeindex
+                order.exit_price = price
+                order.profit = (price - order.entry_price) * order.quantity
+                close_direction = 'BUY' if order.direction == 'SELL' else 'SELL'
+                fill_event = FillEvent(order, timeindex, price,
+                                       symbol, 'LOCAL', order.quantity,
+                                       close_direction)
+                self.events.put(fill_event)
+

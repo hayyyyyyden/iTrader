@@ -23,6 +23,20 @@ class MarketEvent(Event):
         self.type = 'MARKET'
 
 
+class ActionEvent(Event):
+    def __init__(self, symbol, action_type):
+        """
+        Initialises the ActionEvent.
+
+        Parameters:
+        action_type - 'CLOSE_ALL' close all unfilled and open orders. Usually used before the end of
+                       each day or weekend to avoid risk or overnight fee.
+        """
+        self.type = 'ACTION'
+        self.symbol = symbol
+        self.action_type = action_type
+
+
 class SignalEvent(Event):
     """
     Handles the event of sending a Signal from a Strategy object.

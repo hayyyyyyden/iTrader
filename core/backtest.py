@@ -105,6 +105,9 @@ class Backtest(object):
                             self.orders += 1
                             self.execution_handler.execute_order(event)
 
+                        elif event.type == 'ACTION':
+                            self.execution_handler.execute_action(event)
+
                         elif event.type == 'FILL':
                             self.fills += 1
                             self.portfolio.update_fill(event)
