@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 from core.strategy import Strategy
 from core.event import SignalEvent
+from core.event import ActionEvent
 from core.backtest import Backtest
 from core.data import HistoricCSVDataHandler
 from core.execution import SimulatedExecutionHandler
@@ -83,6 +84,12 @@ class VolatilityAutocorrelationStrategy(Strategy):
                 if highs is not None and len(highs) == self.long_window and \
                    lows is not None and len(lows) == self.long_window:
 
+                   # close all orders before the end of weekend, Friday 17:00 in this case
+                   # uncomment this chunk of code if not
+                   # if bar_date.weekday() == 4 and bar_date.hour is 17:
+                   #     action = ActionEvent(s, 'CLOSE_ALL')
+                   #     self.events.put(action)
+                   #     return
                    R_max = np.max(highs[-self.short_window:])
                    R_min = np.min(lows[-self.short_window:])
                    R = (R_max - R_min) * 10000
