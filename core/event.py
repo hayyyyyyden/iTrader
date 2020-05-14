@@ -109,7 +109,7 @@ class FillEvent(Event):
     """
 
     def __init__(self, order, timeindex, price, symbol, exchange, quantity,
-                 direction, fill_cost, commission=None):
+                 direction, commission=None):
         """
         Initialises the FillEvent object. Sets the symbol, exchange,
         quantity, direction, cost of fill and an optional
@@ -125,7 +125,6 @@ class FillEvent(Event):
         exchange - The exchange where the order was filled.
         quantity - The filled quantity.
         direction - The direction of fill ('BUY' or 'SELL')
-        fill_cost - The holdings value in dollars.
         commission - An optional commission sent from IB.
         """
 
@@ -138,7 +137,6 @@ class FillEvent(Event):
         self.exchange = exchange
         self.quantity = quantity
         self.direction = direction
-        self.fill_cost = fill_cost
 
         # Calculate commission
         if commission is None:

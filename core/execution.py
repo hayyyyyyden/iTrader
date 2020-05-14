@@ -197,8 +197,8 @@ class SimulatedExecutionHandler(ExecutionHandler):
                 order.profit = (price - order.entry_price) * order.quantity
             # 无论如何，这个订单要按照市场价执行。
             fill_event = FillEvent(order, timeindex, price,
-                                   event.symbol,'LOCAL', event.quantity,
-                                   event.direction, 0.01)
+                                   event.symbol, 'LOCAL', event.quantity,
+                                   event.direction)
             self.events.put(fill_event)
 
         elif event.type == 'ORDER' and \
