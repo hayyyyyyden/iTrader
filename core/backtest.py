@@ -161,6 +161,10 @@ class Backtest(object):
         self.portfolio.order_history.to_csv('./results/{}/all_orders.csv'.format(fd_name))
         pd.DataFrame(self.portfolio.all_fills).to_csv('./results/{}/all_fills.csv'.format(fd_name))
 
+        text_file = open("./results/{}/stats.txt".format(fd_name), "wt")
+        text_file.write(str(stats))
+        text_file.close()
+
         plt.show()
 
     def simulate_trading(self):
