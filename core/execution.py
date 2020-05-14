@@ -66,6 +66,16 @@ class SimulatedExecutionHandler(ExecutionHandler):
                 return order
         return None
 
+    def _close_sametype_pending_orders_for(self, new_order):
+        # 遍历所有同类型的订单
+        for order in self.all_orders[:]:
+            if order.symbol == new_order.symbol and \
+                    order.entry_price is None and \
+                    order.order_type == new_order.order_type and \
+                    order.direction == new_order.direction:
+                # 找到同类型的限价单，从当前订单池中移除
+                self.all_orders.remove(order)
+
     def scan_open_orders(self, event):
         for symbol in self.bars.symbol_list:
             fill_events = []
@@ -205,7 +215,8 @@ class SimulatedExecutionHandler(ExecutionHandler):
             self.events.put(fill_event)
 
         elif event.type == 'ORDER' and \
-            (event.order_type == 'LMT' or event.order_type == 'STP'):
+                (event.order_type == 'LMT' or event.order_type == 'STP'):
             # 如果是限价单 limit/stop order，直接把订单放入订单池 self.all_orders
             # TODO: 理论上这个订单不会立即成交的吧？
+            self._close_sametype_pending_orders_for(event)
             self.all_orders.append(event)
