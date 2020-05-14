@@ -127,6 +127,8 @@ class SimulatedExecutionHandler(ExecutionHandler):
                 elif order.entry_price is not None and order.exit_price is None:
                     # 处理已经进场的单子，触发止损 stop 或者止盈 limit
                     # stop_loss 和 profit target 的处理
+                    # 这里有一个问题是，止损和止盈如果同时出现在一个波动很大的 k 线内，怎么处理？
+                    # 用小的时间周期应该可以避免。这里的逻辑是按亏损处理。
                     if order.stop_loss is not None:
                         if order.direction == 'BUY' and latest_bar['low'] <= order.stop_loss:
                             # 触发止损
@@ -148,7 +150,8 @@ class SimulatedExecutionHandler(ExecutionHandler):
                            fill_event = FillEvent(order, timeindex, order.exit_price, order.symbol,'LOCAL', order.quantity,'BUY', 0.01)
                            fill_events.append(fill_event)
 
-                    if order.profit_target is not None:
+                    # 这里增加了一个额外的检查，来防止同时触发止损和止盈的情况
+                    if order.profit_target is not None and order.exit_price is None:
                         if order.direction == 'BUY' and latest_bar['high'] >= order.profit_target:
                             # 触发止盈
                             # 更新它的出场信息（价格，时间，盈亏）
