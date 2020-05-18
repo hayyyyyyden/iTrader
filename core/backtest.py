@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import pandas as pd
 from pathlib import Path
+from csv import DictWriter
 
 class Backtest(object):
     """
@@ -14,7 +15,7 @@ class Backtest(object):
 
     def __init__(
         self, csv_dir, symbol_list, initial_capital, heartbeat, start_date,
-        data_handler, execution_handler, portfolio, strategy
+        data_handler, execution_handler, portfolio, strategy, kwargs=None
     ):
         """
         Initialises the backtest.
@@ -41,6 +42,7 @@ class Backtest(object):
         self.execution_handler_cls = execution_handler
         self.portfolio_cls = portfolio
         self.strategy_cls = strategy
+        self.kwargs = kwargs
 
         self.events = queue.Queue()
 
@@ -60,7 +62,7 @@ class Backtest(object):
         self.data_handler = self.data_handler_cls(self.events,
                                                   self.csv_dir,
                                                   self.symbol_list)
-        self.strategy = self.strategy_cls(self.data_handler, self.events)
+        self.strategy = self.strategy_cls(self.data_handler, self.events, **self.kwargs)
         self.portfolio = self.portfolio_cls(self.data_handler,
                                             self.events,
                                             self.start_date,
@@ -150,9 +152,16 @@ class Backtest(object):
         ax2 = fig.add_subplot(212, ylabel='{} close price'.format(symbol))
         self.data_handler.raw_data[symbol]['close'].plot(ax=ax2, color="black", lw=2.)
 
-        s_name = self.strategy_cls.__name__
-        dt_string = datetime.now().strftime("%Y%m%d_%H%M")
-        fd_name = "{}_{}".format(s_name, dt_string)
+        # TODO: this may crash, need to make a formal short_cut name
+        s_name = self.strategy_cls.__name__[:3]
+        dt_string = datetime.now().strftime("%m%d_%H%M")
+        para_str = ''
+        for key in self.kwargs:
+            para_str += '_'
+            para_str += key
+            para_str += '_'
+            para_str += str(self.kwargs[key])
+        fd_name = "{}_{}{}".format(s_name, dt_string, para_str)
         Path("./results/{}".format(fd_name)).mkdir(parents=True, exist_ok=True)
 
         fig.savefig('./results/{}/PnL.png'.format(fd_name), dpi=100)
@@ -161,11 +170,22 @@ class Backtest(object):
         self.portfolio.order_history.to_csv('./results/{}/all_orders.csv'.format(fd_name))
         pd.DataFrame(self.portfolio.all_fills).to_csv('./results/{}/all_fills.csv'.format(fd_name))
 
-        text_file = open("./results/{}/stats.txt".format(fd_name), "wt")
-        text_file.write(str(stats))
-        text_file.close()
+        field_names = list(self.kwargs.keys()) + ['Profit', 'Sharpe', 'Max_Drawdown', 'Drawdown_Duration', 'Win_Rate',
+                                                  'Trade_No', 'Total_Profit', 'Total_Loss', 'Folder_Name']
+        stats.update(self.kwargs)
+        stats.update({'Folder_Name': fd_name})
+        self.append_dict_as_row('./results/{}_stats.csv'.format(s_name), stats, field_names)
 
         plt.show()
+
+    @staticmethod
+    def append_dict_as_row(file_name, dict_of_elem, field_names):
+        # Open file in append mode
+        with open(file_name, 'a+', newline='') as write_obj:
+            # Create a writer object from csv module
+            dict_writer = DictWriter(write_obj, fieldnames=field_names)
+            # Add dictionary as wor in the csv
+            dict_writer.writerow(dict_of_elem)
 
     def simulate_trading(self):
         """

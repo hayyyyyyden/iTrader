@@ -313,13 +313,13 @@ class NaivePortfolio(Portfolio):
         trade_no = len(self.order_history)
         winrate = round(len(self.order_history[self.order_history['profit'] > 0])/trade_no, 3)
 
-        stats = [("Profit", "{} pips.".format(profit)),
-                 ("Annualized Sharpe Ratio", "%0.1f" % sharpe_ratio),
-                 ("Max Drawdown", "%0.1f%%" % (max_dd * 100.0)),
-                 ("Drawdown Duration", "{} hours".format(dd_duration * 4)),
-                 ("Win rate {}%".format(winrate * 100)),
-                 ("Trade number {}".format(trade_no)),
-                 ("Total Profit {}".format(total_profit)),
-                 ("Total Loss {}".format(total_loss))]
+        stats = {"Profit": profit,
+                 "Sharpe": sharpe_ratio,
+                 "Max_Drawdown": max_dd,
+                 "Drawdown_Duration": dd_duration,
+                 "Win_Rate": winrate,
+                 "Trade_No": trade_no,
+                 "Total_Profit": total_profit,
+                 "Total_Loss": total_loss}
 
         return stats

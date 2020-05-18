@@ -1,4 +1,5 @@
 import sys
+
 sys.path.append("./")
 
 import numpy as np
@@ -12,6 +13,7 @@ from core.backtest import Backtest
 from core.data import HistoricCSVDataHandler
 from core.execution import SimulatedExecutionHandler
 from core.portfolio import NaivePortfolio
+
 
 # Volatility Autocorrelation Strategy
 class VolatilityAutocorrelationStrategy(Strategy):
@@ -27,8 +29,7 @@ class VolatilityAutocorrelationStrategy(Strategy):
     Condition: c1 <= R2 < c2, 130 <= R2 < 190 by default
     """
 
-    def __init__(self, bars, events, short_window=12, long_window=18,
-                  sl = 50, k1=0.12, k2=0.32, c1=130, c2=190):
+    def __init__(self, bars, events, **kwargs):
         """
         Initialises the Moving Average Cross Strategy.
         Parameters:
@@ -40,13 +41,13 @@ class VolatilityAutocorrelationStrategy(Strategy):
         self.bars = bars
         self.symbol_list = self.bars.symbol_list
         self.events = events
-        self.short_window = short_window
-        self.long_window = long_window
-        self.sl = sl
-        self.k1 = k1
-        self.k2 = k2
-        self.c1 = c1
-        self.c2 = c2
+        self.short_window = kwargs.pop('short_window', 12)
+        self.long_window = kwargs.pop('long_window', 18)
+        self.k1 = kwargs.pop('k1', 0.18)
+        self.k2 = kwargs.pop('k2', 0.32)
+        self.sl = kwargs.pop('sl', 50)
+        self.c1 = kwargs.pop('c1', 130)
+        self.c2 = kwargs.pop('c2', 190)
         # Set to True if a symbol is in the market
         self.bought = self._calculate_initial_bought()
 
@@ -135,9 +136,12 @@ if __name__ == "__main__":
     initial_capital = 10000
     heartbeat = 0.0
     start_date = dt(2015, 1, 1, 0, 0, 0)
-    backtest = Backtest(csv_dir, symbol_list, initial_capital,
-                        heartbeat, start_date, HistoricCSVDataHandler,
-                        SimulatedExecutionHandler, NaivePortfolio,
-                        VolatilityAutocorrelationStrategy
-    )
-    backtest.simulate_trading()
+    for k2 in np.arange(0.01, 0.99, 0.01):
+        k2 = round(k2, 2)
+        para = {'k1': 0.18, 'k2': k2}
+        backtest = Backtest(csv_dir, symbol_list, initial_capital,
+                            heartbeat, start_date, HistoricCSVDataHandler,
+                            SimulatedExecutionHandler, NaivePortfolio,
+                            VolatilityAutocorrelationStrategy, para
+                            )
+        backtest.simulate_trading()
