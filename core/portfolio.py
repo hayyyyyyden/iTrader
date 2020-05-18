@@ -278,7 +278,6 @@ class NaivePortfolio(Portfolio):
         Creates a pandas DataFrame from the all_positions
         list of dictionaries.
         """
-        print(self.all_positions)
         trade = pd.DataFrame(self.all_positions)
         trade.set_index('datetime', inplace=True)
         self.trade_history = trade
