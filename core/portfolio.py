@@ -67,13 +67,9 @@ class NaivePortfolio(Portfolio):
 
         self.all_positions = self.construct_all_positions()
         self.current_positions = dict( (k,v) for k, v in [(s, 0) for s in self.symbol_list] )
-        print(self.current_positions)
-        print(self.all_positions)
 
         self.all_holdings = self.construct_all_holdings()
         self.current_holdings = self.construct_current_holdings()
-        print(self.current_holdings)
-        print(self.all_holdings)
 
         self.all_orders = {}
         self.all_fills = []
