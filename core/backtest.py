@@ -171,7 +171,8 @@ class Backtest(object):
         pd.DataFrame(self.portfolio.all_fills).to_csv('./results/{}/all_fills.csv'.format(fd_name))
 
         field_names = list(self.kwargs.keys()) + ['Profit', 'Sharpe', 'Max_Drawdown', 'Drawdown_Duration', 'Win_Rate',
-                                                  'Trade_No', 'Total_Profit', 'Total_Loss', 'Folder_Name']
+                                                  'Trade_No', 'Total_Profit', 'Total_Loss', 'Folder_Name',
+                                                  'Profit_Factor']
         stats.update(self.kwargs)
         stats.update({'Folder_Name': fd_name})
         self.append_dict_as_row('./results/{}_stats.csv'.format(s_name), stats, field_names)
