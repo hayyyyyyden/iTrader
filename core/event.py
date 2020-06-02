@@ -10,6 +10,38 @@ class Event(object):
   pass
 
 
+class TickEvent(Event):
+    """
+    Handles the event of receiving a new market update tick,
+    which is defined as a ticker symbol and associated best
+    bid and ask from the top of the order book.
+    """
+    def __init__(self, symbol, time, bid, ask):
+        """
+        Initialises the TickEvent.
+
+        Parameters:
+        symbol - The ticker symbol, e.g. 'EUR/USD'.
+        time - The datetime of the tick
+        bid - The best bid price at the time of the tick.
+        ask - The best ask price at the time of the tick.
+        """
+        self.type = 'TICK'
+        self.symbol = symbol
+        self.time = time
+        self.bid = bid
+        self.ask = ask
+
+    def __str__(self):
+        return "Type: %s, Ticker: %s, Time: %s, Bid: %s, Ask: %s" % (
+            str(self.type), str(self.symbol),
+            str(self.time), str(self.bid), str(self.ask)
+        )
+
+    def __repr__(self):
+        return str(self)
+
+
 class MarketEvent(Event):
     """
     Handles the event of receiving a new market update with
@@ -66,7 +98,6 @@ class SignalEvent(Event):
         self.limit_price = limit_price  # muse be set when order_type is LMT
         self.stop_price = stop_price # must be set when order_type is STP
         self.order_type = order_type
-
 
 
 class OrderEvent(Event):
