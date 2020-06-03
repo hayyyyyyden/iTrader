@@ -102,28 +102,28 @@ class VolatilityAutocorrelationStrategy(Strategy):
                    R2 = round(R2, 1)
 
                    real_date = bar_date+timedelta(hours=4)
-                   print('<----- K 线时间 {} -----> (当前实际时间是 {} 的第一秒)'.format(bar_date, real_date))
-                   print('过去 {} 个小时, 最高价是 {}, 最低价是 {}. 波动值 R2 是 {} 个 Pips.'.format( 4*self.long_window, R2_max, R2_min, R2))
+                   # print('<----- K 线时间 {} -----> (当前实际时间是 {} 的第一秒)'.format(bar_date, real_date))
+                   # print('过去 {} 个小时, 最高价是 {}, 最低价是 {}. 波动值 R2 是 {} 个 Pips.'.format( 4*self.long_window, R2_max, R2_min, R2))
                    if R2 < self.c1 or R2 > self.c2:
-                       print('当前 R2 波动值不满足限制条件: {} < R2 < {}'.format(self.c1, self.c2))
-                       print('不交易，略过。\n\n')
+                       # print('当前 R2 波动值不满足限制条件: {} < R2 < {}'.format(self.c1, self.c2))
+                       # print('不交易，略过。\n\n')
                        return
 
-                   print('当前 R2 波动值满足限制条件: {} < R2 < {} \n'.format(self.c1, self.c2))
-                   print('过去 {} 个小时, 最高价是 {}, 最低价是 {}. 波动值 R 是 {} 个 Pips.'.format( 4*self.short_window, R_max, R_min, R))
+                   # print('当前 R2 波动值满足限制条件: {} < R2 < {} \n'.format(self.c1, self.c2))
+                   # print('过去 {} 个小时, 最高价是 {}, 最低价是 {}. 波动值 R 是 {} 个 Pips.'.format( 4*self.short_window, R_max, R_min, R))
 
                    buy_under = round(self.k1 * R, 1)
                    limit_price = round(close - buy_under/10000, 5)
-                   print('当前价格是 {}. {} 倍的 R 是 {} 个 pips '.format(close,self.k1, buy_under))
-                   print('开一个限价的买单 (Limit Buy Order) 在当前价格 {} 的 {} 个 pips 之下，即 {}.'.format(close, buy_under, limit_price))
+                   # print('当前价格是 {}. {} 倍的 R 是 {} 个 pips '.format(close,self.k1, buy_under))
+                   # print('开一个限价的买单 (Limit Buy Order) 在当前价格 {} 的 {} 个 pips 之下，即 {}.'.format(close, buy_under, limit_price))
 
                    profit_target = round(self.k2 * R, 1)
-                   print('目标盈利 ( profit_target ) 是 {} 倍的 R，即 {} 个 pips.'.format(self.k2, profit_target))
+                   # print('目标盈利 ( profit_target ) 是 {} 倍的 R，即 {} 个 pips.'.format(self.k2, profit_target))
                    profit_target = round(limit_price + profit_target / 10000, 5)
-                   print('即, {}'.format(profit_target))
-                   print('止损 (stop_loss) 为固定的 {} 个 pips.'.format(self.sl))
+                   # print('即, {}'.format(profit_target))
+                   # print('止损 (stop_loss) 为固定的 {} 个 pips.'.format(self.sl))
                    stop_loss = round(limit_price - self.sl / 10000, 5)
-                   print('即, {}'.format(stop_loss))
+                   # print('即, {}'.format(stop_loss))
                    signal_type = 'LONG'
                    signal = SignalEvent(s, real_date, signal_type, 'LMT',
                             limit_price, stop_loss, profit_target)
@@ -136,12 +136,10 @@ if __name__ == "__main__":
     initial_capital = 10000
     heartbeat = 0.0
     start_date = dt(2015, 1, 1, 0, 0, 0)
-    for k2 in np.arange(0.01, 0.99, 0.01):
-        k2 = round(k2, 2)
-        para = {'k1': 0.18, 'k2': k2}
-        backtest = Backtest(csv_dir, symbol_list, initial_capital,
-                            heartbeat, start_date, HistoricCSVDataHandler,
-                            SimulatedExecutionHandler, NaivePortfolio,
-                            VolatilityAutocorrelationStrategy, para
-                            )
-        backtest.simulate_trading()
+    para = {'k1': 0.18, 'k2': 0.30}
+    backtest = Backtest(csv_dir, symbol_list, initial_capital,
+                        heartbeat, start_date, HistoricCSVDataHandler,
+                        SimulatedExecutionHandler, NaivePortfolio,
+                        VolatilityAutocorrelationStrategy,para
+                        )
+    backtest.simulate_trading()

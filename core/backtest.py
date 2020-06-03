@@ -77,7 +77,7 @@ class Backtest(object):
         i = 0
         while True:
             i += 1
-            print(i)
+            # print(i)
             # Update the market bars
             if self.data_handler.continue_backtest == True:
                 self.data_handler.update_bars()
@@ -95,6 +95,7 @@ class Backtest(object):
                 else:
                     if event is not None:
                         if event.type == 'MARKET':
+                            print("Generate New Market Event")
                             fill_events = self.execution_handler.scan_open_orders(event)
                             if fill_events:
                                 self.fills += len(fill_events)
@@ -103,11 +104,13 @@ class Backtest(object):
                             self.portfolio.update_timeindex(event)
 
                         elif event.type == 'SIGNAL':
+                            print("Generate New Signal Event")
                             self.signals += 1
                             self.portfolio.update_signal(event)
 
                         elif event.type == 'ORDER':
                             self.orders += 1
+                            print("Generate New Order Event")
                             self.execution_handler.execute_order(event)
 
                         elif event.type == 'ACTION':
@@ -115,6 +118,7 @@ class Backtest(object):
 
                         elif event.type == 'FILL':
                             self.fills += 1
+                            print("Generate New Fill Event")
                             self.portfolio.update_fill(event)
 
             time.sleep(self.heartbeat)

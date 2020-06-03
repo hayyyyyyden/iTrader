@@ -94,6 +94,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             order.entry_time = timeindex
                             # 简单的使用了 limit price，实际情况可能会更好的价格
                             order.entry_price = order.limit_price
+                            print("Buy {} size of {} @ {}, at {}".format(order.quantity, order.symbol, order.limit_price, timeindex))
                             fill_event = FillEvent(order, timeindex, order.limit_price,order.symbol,'LOCAL', order.quantity, order.direction, 0.01)
                             fill_events.append(fill_event)
 
@@ -147,6 +148,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                             order.exit_price = order.stop_loss
                             order.profit = (order.exit_price - order.entry_price) * order.quantity
                             # TODO: 这里的方向是 hardcoded，因为和order是反着的
+                            print("Sell {} size of {} @ {}, at {}".format(order.quantity, order.symbol, order.exit_price,timeindex))
                             fill_event = FillEvent(order, timeindex, order.exit_price,order.symbol,'LOCAL', order.quantity,'SELL', 0.01)
                             fill_events.append(fill_event)
 
@@ -218,7 +220,7 @@ class SimulatedExecutionHandler(ExecutionHandler):
                 (event.order_type == 'LMT' or event.order_type == 'STP'):
             # 如果是限价单 limit/stop order，直接把订单放入订单池 self.all_orders
             # TODO: 理论上这个订单不会立即成交的吧？
-            self._close_sametype_pending_orders_for(event)
+            # self._close_sametype_pending_orders_for(event)
             self.all_orders.append(event)
 
     def execute_action(self, event):
