@@ -81,9 +81,37 @@ class FXCMExecutionHandler(ExecutionHandler):
             # TODO: hardcoded ERU/USD
             print('执行订单', datetime.now())
             if event.direction == 'SELL':
-                self.fxcm_conn.create_market_sell_order(fxcm_symbol_from[event.symbol], event.quantity)
+                order = self.fxcm_conn.open_trade(symbol=fxcm_symbol_from[event.symbol],
+                                          is_buy=False,
+                                          amount=event.quantity,
+                                          time_in_force='FOK',
+                                          order_type='AtMarket',
+                                          rate=0,
+                                          is_in_pips=False,
+                                          limit=event.profit_target,
+                                          at_market=0,
+                                          stop=event.stop_loss,
+                                          trailing_step=None,
+                                          account_id=None)
+                print(event.profit_target)
+                print(event.stop_loss)
+                print(order)
             else:
-                self.fxcm_conn.create_market_buy_order(fxcm_symbol_from[event.symbol], event.quantity)
+                print(event.profit_target)
+                print(event.stop_loss)
+                order = self.fxcm_conn.open_trade(symbol=fxcm_symbol_from[event.symbol],
+                                          is_buy=True,
+                                          amount=event.quantity,
+                                          time_in_force='FOK',
+                                          order_type='AtMarket',
+                                          rate=0,
+                                          is_in_pips=False,
+                                          limit=event.profit_target,
+                                          at_market=0,
+                                          stop=event.stop_loss,
+                                          trailing_step=None,
+                                          account_id=None)
+                print(order)
             fill_event = FillEvent(order, timeindex, price,
                                    event.symbol, 'FXCM', event.quantity,
                                    event.direction)

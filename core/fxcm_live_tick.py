@@ -166,7 +166,7 @@ class FXCMLiveTickDataHandler:
 if __name__ == '__main__':
     import queue, time
     events_queue = queue.Queue()
-    end_datetime = datetime.now() + timedelta(minutes=8)
+    end_datetime = datetime.now() + timedelta(minutes=4)
     data_handler = FXCMLiveTickDataHandler(events_queue, '../data/M1', ['EUR_USD'], end_datetime)
     execution_handler = FXCMExecutionHandler(events_queue, data_handler, end_datetime, data_handler.fxcm_conn)
     i = 0
@@ -187,19 +187,38 @@ if __name__ == '__main__':
                     # print('Now is ', datetime.now())
                     # print('Data is')
                     # print(data_handler.bar_data['EUR_USD'].tail(1))
-                    # print('bidclose is', data_handler.get_latest_bar_value('EUR_USD', 'bidclose'))
+                    latest_price = data_handler.get_latest_bar_value('EUR_USD', 'bidclose')
+                    print('bidclose is', latest_price)
                     if buy:
                         print('生成订单：买')
-                        signal = SignalEvent('EUR_USD', datetime.now(), 'LONG', 1000)
-                        order = OrderEvent(signal, 1000, 'BUY')
+                        signal = SignalEvent(symbol='EUR_USD',
+                                             datetime=datetime.now(),
+                                             signal_type='LONG',
+                                             order_type='MKT',
+                                             limit_price=None,
+                                             stop_loss=latest_price - 0.0010,
+                                             profit_target=latest_price + 0.0010,
+                                             stop_price=None,
+                                             quantity=100,
+                                             strategy_id=1)
+                        order = OrderEvent(signal, signal.quantity, 'BUY')
                         events_queue.put(order)
                         buy = False
                     else:
                         print('生成订单：卖')
-                        signal = SignalEvent('EUR_USD', datetime.now(), 'SHORT', 1000)
-                        order = OrderEvent(signal, 1000, 'SELL')
+                        signal = SignalEvent(symbol='EUR_USD',
+                                             datetime=datetime.now(),
+                                             signal_type='SHORT',
+                                             order_type='MKT',
+                                             limit_price=None,
+                                             stop_loss=latest_price + 0.0010,
+                                             profit_target=latest_price - 0.0010,
+                                             stop_price=None,
+                                             quantity=100,
+                                             strategy_id=1)
+                        order = OrderEvent(signal, signal.quantity, 'SELL')
                         events_queue.put(order)
-                        buy = False
+                        buy = True
                 elif event.type == 'TICK':
                     pass
                     # print('新的Tick事件', datetime.now())
