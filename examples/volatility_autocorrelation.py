@@ -81,7 +81,11 @@ class VolatilityAutocorrelationStrategy(Strategy):
                 )
                 close = self.bars.get_latest_bar_value(s, 'close')
                 bar_date = self.bars.get_latest_bar_datetime(s)
-                bar_date = datetime.strptime(bar_date[:-4], "%Y-%m-%dT%H:%M:%S.%f")
+                try:
+                    bar_date = datetime.strptime(bar_date[:-4], "%Y-%m-%dT%H:%M:%S.%f")
+                except ValueError:
+                    bar_date = datetime.strptime(bar_date, "%Y-%m-%d %H:%M:%S")
+                    print('Using FXCM format.')
                 if highs is not None and len(highs) == self.long_window and \
                    lows is not None and len(lows) == self.long_window:
 
@@ -131,17 +135,15 @@ class VolatilityAutocorrelationStrategy(Strategy):
 
 
 if __name__ == "__main__":
-    csv_dir = './data/H4' # CHANGE THIS!
-    symbol_list = ['AUD_USD_H4']
+    csv_dir = '../data/H4' # CHANGE THIS!
+    symbol_list = ['AUD_USD_H4_FXCM']
     initial_capital = 10000
     heartbeat = 0.0
     start_date = dt(2015, 1, 1, 0, 0, 0)
-    for k2 in np.arange(0.01, 0.99, 0.01):
-        k2 = round(k2, 2)
-        para = {'k1': 0.18, 'k2': k2}
-        backtest = Backtest(csv_dir, symbol_list, initial_capital,
-                            heartbeat, start_date, HistoricCSVDataHandler,
-                            SimulatedExecutionHandler, NaivePortfolio,
-                            VolatilityAutocorrelationStrategy, para
-                            )
-        backtest.simulate_trading()
+    para = {'k1': 0.18, 'k2': 0.31}
+    backtest = Backtest(csv_dir, symbol_list, initial_capital,
+                        heartbeat, start_date, HistoricCSVDataHandler,
+                        SimulatedExecutionHandler, NaivePortfolio,
+                        VolatilityAutocorrelationStrategy, para
+                        )
+    backtest.simulate_trading()
